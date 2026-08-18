@@ -83,5 +83,33 @@ class PredefinedRulesModal extends HookConsumerWidget {
         ruleSets: ["geosite-private", "geoip-private"],
       ),
     ),
+    (
+      t.pages.settings.routing.predefinedRules.ruServices.description,
+      Rule.new(
+        enabled: true,
+        name: t.pages.settings.routing.predefinedRules.ruServices.name,
+        outbound: Outbound.direct,
+        // Starter list of major RU banks/marketplaces/services that may be served
+        // from non-RU CDN IPs (not always covered by geoip-ru alone). Extend via
+        // the routing exceptions screen as needed — this is a starting point, not
+        // an exhaustive list. See PLAN.md §6.1.
+        domainSuffixes: [
+          "sberbank.ru",
+          "sber.ru",
+          "ozon.ru",
+          "wildberries.ru",
+          "yandex.ru",
+          "yandex.net",
+          "yandex.com",
+          "gosuslugi.ru",
+          "mos.ru",
+          "tinkoff.ru",
+          "tbank.ru",
+          "vtb.ru",
+          "alfabank.ru",
+          "mts.ru",
+        ],
+      ),
+    ),
   ];
 }
