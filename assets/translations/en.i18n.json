@@ -1,6 +1,6 @@
 ﻿{
   "common": {
-    "appTitle": "Hiddify",
+    "appTitle": "Pup",
     "start": "Start",
     "version": "Version",
     "ok": "OK",
@@ -95,7 +95,7 @@
   "intro": {
     "banner": "All you need for an unrestricted internet",
     "termsAndPolicyCaution(rich)": "By continuing you agree to ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Made with ❤️ by Hiddify - ${tap_source(Open Source)} (${tap_license(License)})"
+    "info(rich)": "Based on Hiddify (hiddify.com) - ${tap_source(Open Source)} (${tap_license(License)})"
   },
   "pages": {
     "home": {
@@ -189,6 +189,37 @@
       "termsAndConditions": "Terms and conditions",
       "privacyPolicy": "Privacy policy"
     },
+    "selfCheck": {
+      "title": "VPN visibility check",
+      "subtitle": "Runs the same class of checks a background app without root could use to detect this VPN — on your current server and settings, right now.",
+      "run": "Run check",
+      "rerun": "Run again",
+      "running": "Running checks…",
+      "notRunYet": "Not run yet in this session — tap \"Run check\" below.",
+      "verdict": {
+        "good": "Looks like ordinary traffic",
+        "warning": "Some things worth a look",
+        "bad": "High chance of detection",
+        "info": "Run the check to see a verdict"
+      },
+      "status": {
+        "good": "OK",
+        "warning": "Warning",
+        "bad": "Detected",
+        "info": "Info",
+        "error": "Check failed"
+      },
+      "items": {
+        "localPorts": "Local ports (BypassChecker-style scan)",
+        "interfaceName": "Network interface name",
+        "ipReputation": "Exit IP reputation",
+        "cdnColo": "CDN edge location",
+        "rtt": "RTT triangulation",
+        "dnsLeak": "DNS / WebRTC / IPv6 leaks",
+        "transportVpn": "System VPN signal"
+      },
+      "limitationNotice": "This only checks what's visible to an ordinary app without root — the same threat model as a background process in a banking or marketplace app. It doesn't emulate deeper root/Shizuku-level checks, since those aren't part of that threat model."
+    },
     "settings": {
       "title": "Settings",
       "resetTunnel": "Reset VPN profile",
@@ -225,6 +256,8 @@
         "silentStart": "Start minimized",
         "ignoreBatteryOptimizations": "Disable battery optimization",
         "ignoreBatteryOptimizationsMsg": "Remove restrictions for optimal VPN performance",
+        "openVpnLockdownSettings": "Block connections without VPN",
+        "openVpnLockdownSettingsMsg": "Recommended: open system VPN settings and enable \"Block connections without VPN\" for this app, so traffic can't leak if the tunnel drops. The app can't enable this for you — Android requires doing it manually.",
         "memoryLimit": "Memory limit",
         "memoryLimitMsg": "Enable if you're experiencing out of memory errors or frequent app crashes",
         "debugMode": "Debug mode",
@@ -396,6 +429,10 @@
           "bypassLan": {
             "name": "Bypass LAN",
             "description": ""
+          },
+          "ruServices": {
+            "name": "RU banks & marketplaces (direct)",
+            "description": "Manual domain list for RU banks/marketplaces, in case they're served from non-RU CDN IPs not covered by geoip-ru"
           }
         }
       },
