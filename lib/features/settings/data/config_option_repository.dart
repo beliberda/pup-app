@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dartx/dartx.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hiddify/core/model/optional_range.dart';
@@ -15,6 +17,15 @@ import 'package:hiddify/singbox/model/singbox_config_option.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// Fixed default local ports (upstream used 12334/12335/12336/12337 for every
+// install) are a stealth issue: any other app on the device can guess and probe
+// these well-known ports without even scanning (see PLAN.md §5.4, BypassChecker).
+// Randomizing per-install — chosen once on first run, then persisted like any
+// other preference — doesn't stop a full port-range scan, but does defeat
+// "just try the known default" detection, and stops this fork from sharing a
+// fixed fingerprint with vanilla Hiddify installs.
+int _randomLocalPort() => 20000 + Random.secure().nextInt(40000);
 
 abstract class ConfigOptions {
   static final serviceMode = PreferencesNotifier.create<ServiceMode, String>(
@@ -107,28 +118,36 @@ abstract class ConfigOptions {
   static final mixedPort = PreferencesNotifier.create<int, int>(
     "mixed-port",
     12334,
+    defaultValueFunction: (ref) => _randomLocalPort(),
     validator: (value) => isPort(value.toString()),
   );
   static final tproxyPort = PreferencesNotifier.create<int, int>(
     "tproxy-port",
     12335,
+    defaultValueFunction: (ref) => _randomLocalPort(),
     validator: (value) => isPort(value.toString()),
   );
   static final redirectPort = PreferencesNotifier.create<int, int>(
     "redirect-port",
     12336,
+    defaultValueFunction: (ref) => _randomLocalPort(),
     validator: (value) => isPort(value.toString()),
   );
   static final directPort = PreferencesNotifier.create<int, int>(
     "direct-port",
     12337,
+    defaultValueFunction: (ref) => _randomLocalPort(),
     validator: (value) => isPort(value.toString()),
   );
 
   static final enableMixedPort = PreferencesNotifier.create<bool, bool>("enable-mixed-port", true);
-  static final enableTproxyPort = PreferencesNotifier.create<bool, bool>("enable-tproxy-port", true);
-  static final enableRedirectPort = PreferencesNotifier.create<bool, bool>("enable-redirect-port", true);
-  static final enableDirectPort = PreferencesNotifier.create<bool, bool>("enable-direct-port", true);
+  // tproxy/redirect/direct inbounds are niche system-level transparent-proxy features,
+  // not used by this app's core TUN-mode operation — off by default to avoid opening
+  // extra local ports with no functional benefit for the typical setup (PLAN.md §5.4).
+  // Users who specifically need them can still re-enable in Settings.
+  static final enableTproxyPort = PreferencesNotifier.create<bool, bool>("enable-tproxy-port", false);
+  static final enableRedirectPort = PreferencesNotifier.create<bool, bool>("enable-redirect-port", false);
+  static final enableDirectPort = PreferencesNotifier.create<bool, bool>("enable-direct-port", false);
 
   static final tunImplementation = PreferencesNotifier.create<TunImplementation, String>(
     "tun-implementation",
@@ -166,11 +185,18 @@ abstract class ConfigOptions {
     mapTo: const IntervalInSecondsConverter().toJson,
   );
 
-  static final enableClashApi = PreferencesNotifier.create<bool, bool>("enable-clash-api", true);
+  // Was `true` upstream: opens a local HTTP API on 127.0.0.1:<clashApiPort> (fixed
+  // port 16756 across every install) for external Clash-dashboard-style tools. We
+  // don't use that integration, and a fixed, predictable open loopback port is
+  // exactly the "BypassChecker" vector from PLAN.md §5.4 — any other app on the
+  // device can detect it's listening without needing the secret. Off by default;
+  // users who want external tooling can re-enable it in Settings.
+  static final enableClashApi = PreferencesNotifier.create<bool, bool>("enable-clash-api", false);
 
   static final clashApiPort = PreferencesNotifier.create<int, int>(
     "clash-api-port",
     16756,
+    defaultValueFunction: (ref) => _randomLocalPort(),
     validator: (value) => isPort(value.toString()),
   );
 
@@ -479,10 +505,22 @@ abstract class ConfigOptions {
       remoteDnsDomainStrategy: ref.watch(remoteDnsDomainStrategy),
       directDnsAddress: ref.watch(directDnsAddress),
       directDnsDomainStrategy: ref.watch(directDnsDomainStrategy),
+      // NOTE: hiddify-core's Go builder gates tproxy/redirect/direct inbounds on the
+      // raw port value being > 0 — it has no separate "enable" flag field for them
+      // (confirmed by reading hiddify-core/v2/config/{builder,hiddify_option}.go), so
+      // the on/off switch has to happen here: send 0 when disabled, not the real
+      // port. Without this, flipping enable-tproxy-port etc. to false in Settings
+      // would only change what the toggle *shows*, not what actually gets opened.
+      // mixedPort is deliberately NOT zeroed the same way: unlike the other three,
+      // that inbound is created unconditionally in the Go builder regardless of
+      // port value (it's separate from the TUN device itself), and ListenPort: 0's
+      // behavior there isn't confirmed safe without a real-device test we can't run
+      // from here — only randomized per-install (see _randomLocalPort above), not
+      // disabled.
       mixedPort: ref.watch(mixedPort),
-      tproxyPort: ref.watch(tproxyPort),
-      directPort: ref.watch(directPort),
-      redirectPort: ref.watch(redirectPort),
+      tproxyPort: ref.watch(enableTproxyPort) ? ref.watch(tproxyPort) : 0,
+      directPort: ref.watch(enableDirectPort) ? ref.watch(directPort) : 0,
+      redirectPort: ref.watch(enableRedirectPort) ? ref.watch(redirectPort) : 0,
       enableMixedPort: ref.watch(enableMixedPort),
       enableTproxyPort: ref.watch(enableTproxyPort),
       enableDirectPort: ref.watch(enableDirectPort),

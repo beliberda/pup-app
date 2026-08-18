@@ -20,7 +20,10 @@ bool _testCrashReport = false;
 class AnalyticsController extends _$AnalyticsController with AppLogger {
   @override
   Future<bool> build() async {
-    return _preferences.getBool(enableAnalyticsPrefKey) ?? true;
+    // Was `?? true` upstream (opt-out telemetry, enabled by default and sent to
+    // Hiddify's own Sentry project via a compiled-in DSN). Flipped to opt-in-only:
+    // see PLAN.md §4.3/§5, CLAUDE.md "Что обязательно проверять перед релизом".
+    return _preferences.getBool(enableAnalyticsPrefKey) ?? false;
   }
 
   SharedPreferences get _preferences => ref.read(sharedPreferencesProvider).requireValue;

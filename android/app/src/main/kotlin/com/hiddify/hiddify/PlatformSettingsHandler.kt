@@ -43,6 +43,7 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
             RequestIgnoreBatteryOptimizations("request_ignore_battery_optimizations"),
             GetInstalledPackages("get_installed_packages"),
             GetPackagesIcon("get_package_icon"),
+            OpenVpnSettings("open_vpn_settings"),
         }
     }
 
@@ -158,6 +159,22 @@ class PlatformSettingsHandler : FlutterPlugin, MethodChannel.MethodCallHandler, 
                         list.sortBy { it.name }
                         success(gson.toJson(list))
                     }
+                }
+            }
+
+            Trigger.OpenVpnSettings.method -> {
+                // Deep-links to the system VPN settings screen so the user can
+                // manually enable "Always-on VPN" + "Block connections without VPN"
+                // for this app. Android does not let an app enable this for itself
+                // (by design, for user safety) and there is no reliable public API
+                // for a normal app to even query whether it's currently enabled —
+                // so this only opens the screen, it doesn't try to detect/toggle
+                // state. See PLAN.md §5.4, tasks/03-stealth-hardening.md.
+                result.runCatching {
+                    val intent = Intent(android.provider.Settings.ACTION_VPN_SETTINGS)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    Application.application.startActivity(intent)
+                    success(true)
                 }
             }
 

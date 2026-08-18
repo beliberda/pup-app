@@ -3,6 +3,7 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
 import 'package:hiddify/features/proxy/active/ip_widget.dart';
+import 'package:hiddify/features/settings/data/vpn_lockdown_repository.dart';
 import 'package:hiddify/features/settings/notifier/battery_optimization/battery_optimizations_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -180,6 +181,30 @@ class BatteryOptimizationWidget extends HookConsumerWidget {
           child: Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: LinearProgressIndicator()),
         ),
       ),
+    );
+  }
+}
+
+/// Deep-links to Android's system VPN settings so the user can manually enable
+/// "Always-on VPN" + "Block connections without VPN". There is no reliable way
+/// for the app to detect whether this is already enabled (see
+/// VpnLockdownRepository doc comment), so unlike [BatteryOptimizationWidget]
+/// this tile can't hide itself once satisfied — it's always shown as a
+/// recommendation on Android.
+class VpnLockdownWidget extends HookConsumerWidget {
+  const VpnLockdownWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+
+    return ListTile(
+      title: Text(t.pages.settings.general.openVpnLockdownSettings),
+      subtitle: Text(t.pages.settings.general.openVpnLockdownSettingsMsg),
+      leading: const Icon(Icons.shield_rounded),
+      onTap: () async {
+        await VpnLockdownRepositoryImpl().openSystemVpnSettings();
+      },
     );
   }
 }

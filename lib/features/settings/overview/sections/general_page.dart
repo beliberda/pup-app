@@ -64,6 +64,7 @@ class GeneralPage extends HookConsumerWidget {
             ),
           ],
           if (PlatformUtils.isAndroid) const BatteryOptimizationWidget(),
+          if (PlatformUtils.isAndroid) const VpnLockdownWidget(),
           SwitchListTile.adaptive(
             title: Text(t.pages.settings.general.memoryLimit),
             subtitle: Text(t.pages.settings.general.memoryLimitMsg),
