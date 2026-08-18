@@ -5,6 +5,8 @@
 //  Created by GFWFighter on 7/24/1402 AP.
 //
 
-BASE_BUNDLE_IDENTIFIER=apple.hiddify.com
-SERVICE_IDENTIFIER=com.hiddify.app
+BASE_BUNDLE_IDENTIFIER=com.beliberda.pupapp
+SERVICE_IDENTIFIER=com.beliberda.pupapp
+// TODO: replace with your own Apple Developer Team ID (Этап 0 — Apple Developer аккаунт).
+// The original Hiddify team ID below will NOT work for signing — it belongs to Hiddify, not you.
 DEVELOPMENT_TEAM=3JFTY5BP58

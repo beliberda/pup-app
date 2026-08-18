@@ -75,7 +75,7 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
     try {
       final routeRules = RouteRule(rules: state);
       final base64Data = base64.encode(utf8.encode(jsonEncode(routeRules.writeToJson())));
-      await Clipboard.setData(ClipboardData(text: 'hiddify:///settings/routing-options?routeRule=$base64Data'));
+      await Clipboard.setData(ClipboardData(text: 'pup:///settings/routing-options?routeRule=$base64Data'));
       ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.export.clipboard.success);
       return true;
     } on PlatformException {
