@@ -20,6 +20,7 @@ import 'package:hiddify/features/proxy/overview/proxies_overview_page.dart';
 import 'package:hiddify/features/route_rules/notifier/rule_notifier.dart';
 import 'package:hiddify/features/route_rules/overview/generic_list_page.dart';
 import 'package:hiddify/features/route_rules/overview/rule_page.dart';
+import 'package:hiddify/features/selfcheck/overview/selfcheck_page.dart';
 import 'package:hiddify/features/settings/overview/sections/chain_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/dns_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/general_page.dart';
@@ -267,6 +268,12 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                       path: 'chain-options',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const ChainOptionsPage()),
+                    ),
+                    GoRoute(
+                      name: 'selfCheck',
+                      path: 'self-check',
+                      pageBuilder: (_, state) =>
+                          customTransition(TransitionType.slide, state.pageKey, const SelfCheckPage()),
                     ),
                     if (isMobileBreakpoint) ...[
                       GoRoute(

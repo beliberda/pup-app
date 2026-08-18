@@ -1,0 +1,16 @@
+{
+  "suspiciousInterfacePatterns": [
+    "^tun\\d*$",
+    "^tap\\d*$",
+    "^wg\\d*$",
+    "^utun\\d*$",
+    "^ppp\\d*$",
+    "^wintun\\d*$"
+  ],
+  "ipReputationEndpoint": "https://api.ipapi.is/",
+  "cdnTraceEndpoint": "https://www.cloudflare.com/cdn-cgi/trace",
+  "rttHosts": {
+    "ru": ["ya.ru", "sberbank.ru", "mail.ru"],
+    "foreign": ["google.com", "cloudflare.com", "apple.com"]
+  }
+}

@@ -174,6 +174,11 @@ class SettingsPage extends HookConsumerWidget {
             icon: Icons.content_cut_rounded,
             namedLocation: context.namedLocation('tlsTricks'),
           ),
+          SettingsSection(
+            title: t.pages.selfCheck.title,
+            icon: Icons.security_rounded,
+            namedLocation: context.namedLocation('selfCheck'),
+          ),
           if (PlatformUtils.isIOS)
             Material(
               child: ListTile(
