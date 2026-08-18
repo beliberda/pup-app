@@ -19,18 +19,18 @@ env:
   NDK_VERSION: r28c
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   TAG_NAME: "${{ inputs.tag-name }}"
-  TARGET_NAME_gz: "Hiddify-Linux-x64-AppImage.tar"
-  TARGET_NAME_AppImage: "Hiddify-Linux-x64-AppImage"
-  TARGET_NAME_deb: "Hiddify-Debian-x64"
-  # TARGET_NAME_rpm: "Hiddify-rpm-x64"
-  TARGET_NAME_apk: "Hiddify-Android"
-  TARGET_NAME_aab: "Hiddify-Android"
-  TARGET_NAME_exe: "Hiddify-Windows-Setup-x64"
-  TARGET_NAME_msix: "Hiddify-Windows-x64"
-  TARGET_NAME_zip: "Hiddify-Windows-Portable-x64"
-  TARGET_NAME_dmg: "Hiddify-MacOS"
-  TARGET_NAME_pkg: "Hiddify-MacOS-Installer"
-  TARGET_NAME_ipa: "Hiddify-iOS"
+  TARGET_NAME_gz: "Pup-Linux-x64-AppImage.tar"
+  TARGET_NAME_AppImage: "Pup-Linux-x64-AppImage"
+  TARGET_NAME_deb: "Pup-Debian-x64"
+  # TARGET_NAME_rpm: "Pup-rpm-x64"
+  TARGET_NAME_apk: "Pup-Android"
+  TARGET_NAME_aab: "Pup-Android"
+  TARGET_NAME_exe: "Pup-Windows-Setup-x64"
+  TARGET_NAME_msix: "Pup-Windows-x64"
+  TARGET_NAME_zip: "Pup-Windows-Portable-x64"
+  TARGET_NAME_dmg: "Pup-MacOS"
+  TARGET_NAME_pkg: "Pup-MacOS-Installer"
+  TARGET_NAME_ipa: "Pup-iOS"
   
 
 jobs:
@@ -103,11 +103,15 @@ jobs:
           #   aarch: arm64
           #   targets: deb,gz
             
-          - platform: macos
-            os: macos-15
-            aarch: universal
-            targets: dmg,pkg
-            
+          # macOS/iOS out of scope for now (2026-08-18, tasks/05-cicd.md): no Apple
+          # Developer account/Team ID set up, and macOS runners are the most
+          # expensive GitHub-hosted minutes to burn on a build nobody will sign or
+          # ship yet. Re-enable once iOS/macOS distribution is actually pursued.
+          # - platform: macos
+          #   os: macos-15
+          #   aarch: universal
+          #   targets: dmg,pkg
+
           # - platform: ios
           #   os: macos-15
           #   aarch: universal
@@ -263,7 +267,7 @@ jobs:
           folder: 'dist'
           timestamp-server: 'http://timestamp.digicert.com'
           recursive: true
-          description: 'Hiddify'
+          description: 'Pup'
 
       - name: Copy to out Windows
         if: matrix.platform == 'windows'
@@ -286,20 +290,11 @@ jobs:
           }
           Get-ChildItem -Path out
           
-      - name: Upload Debug Symbols
-        if: ${{ inputs.upload-artifact && inputs.tag-name != 'draft' }}
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_DIST: ${{ matrix.platform == 'android-aab' && 'google-play' || 'general' }}
-        run: |
-          dart pub global activate sentry_dart_plugin
-          dart run sentry_dart_plugin 
-      
-      
+      # Upload Debug Symbols step (Sentry) removed — telemetry disabled for this fork,
+      # see PLAN.md §4.3/§5, CLAUDE.md. Uses secrets that don't carry over on fork
+      # anyway, but keeping the step around invites accidental re-enablement.
 
-              
+
       - name: Copy to out Android APK
         if: matrix.platform == 'android-apk'
         run: |
@@ -315,7 +310,7 @@ jobs:
         run: |
           mkdir out
           ls -R ./build/app/outputs
-          cp ./build/app/outputs/bundle/release/app-release.aab out/hiddify-android-market.aab || echo "no aab"
+          cp ./build/app/outputs/bundle/release/app-release.aab out/pup-android-market.aab || echo "no aab"
 
       - name: Copy to out unix
         if: startsWith(matrix.platform,'linux') || matrix.platform == 'macos' || matrix.platform == 'ios'
@@ -399,7 +394,7 @@ jobs:
           set +e 
           sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
           pip install gitchangelog pystache mustache markdown
-          prelease=$(curl --silent "https://api.github.com/repos/hiddify/hiddify-app/releases/latest" | grep -Po '"tag_name": "\K([^"]*)') 
+          prelease=$(curl --silent "https://api.github.com/repos/${{ github.repository }}/releases/latest" | grep -Po '"tag_name": "\K([^"]*)')
           echo -e "\n\n<details markdown=1><summary>All changes from $current to the latest commit:</summary>\n\n">>release.md
           gitchangelog "${prelease}.." >> release.md  2>&1 || echo "Error in gitchangelog"
           echo -e "\n\n</details>">>release.md
@@ -414,19 +409,12 @@ jobs:
           body_path: './release.md'
           prerelease: true
 
-      - name: Create or Update Draft Release
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
-          GITHUB_REPOSITORY: hiddify/hiddify-app
-        with:
-          files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
-          target_commitish: '530bf77839a74d4f13847ba244a20734ac7ab119'
-          prerelease: true
-          repository: hiddify/hiddify-app
+      # Upstream Hiddify also pushed its own draft release into hiddify/hiddify-app
+      # itself here, using a TOKEN_FOR_HIDDIFY_APP_REPO secret scoped to their repo.
+      # Removed for this fork (2026-08-18): we have no legitimate reason or
+      # credentials to write into the upstream repo, and leaving the step in place
+      # (even inert without the secret) is a needless foot-gun if that secret name
+      # ever gets populated by mistake. See tasks/05-cicd.md.
 
   upload-release:
     permissions: write-all
@@ -449,7 +437,6 @@ jobs:
           ls -R ./out
           ls -R ./.github/
           ls -R ./.git/
-          mv out/hiddify-android-market.aab  hiddify-android-market.aab
 
       - name: prepare_release_message
         run: |
@@ -467,23 +454,20 @@ jobs:
           body_path: './release.md'
           files: ./out/*
 
-      - name: Create service_account.json
-        run: echo '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > service_account.json
-
-      - name: Deploy to Google Play Internal Testers
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJson: service_account.json
-          packageName: app.hiddify.com
-          releaseName: ${{ env.TAG_NAME }}
-          releaseFiles: ./hiddify-android-market.aab
-          track: 'beta'
+      # Google Play (Internal Testers) publish step removed for this fork
+      # (2026-08-18): public store distribution is explicitly out of scope
+      # (CLAUDE.md, "Что НЕ входит в scope"), and the step also still referenced
+      # Hiddify's own applicationId (app.hiddify.com), not ours. GitHub Releases
+      # (the step above) is the only distribution channel for Android.
 
 
   upload-to-testflight:
     needs: [build]
-    if: ${{ inputs.upload-artifact &&  inputs.tag-name != 'draft' }}
-    #if: ${{ inputs.upload-artifact }}
+    # Disabled while iOS is out of the build matrix (see the macos/ios entries
+    # above) — this job needs an *ios* artifact that no longer gets produced.
+    # Flip back on together with re-enabling the ios matrix entry.
+    if: false
+    #if: ${{ inputs.upload-artifact &&  inputs.tag-name != 'draft' }}
     runs-on: macOS-latest
     timeout-minutes: 30
     steps:
@@ -499,15 +483,19 @@ jobs:
           p12-file-base64: ${{ secrets.APPLE_UPLOAD_CERTIFICATE_P12 }}
           p12-password: ${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}
 
+      # bundle ids match ios/Base.xcconfig (BASE_BUNDLE_IDENTIFIER) and the
+      # PacketTunnel extension target's PRODUCT_BUNDLE_IDENTIFIER in
+      # ios/Runner.xcodeproj/project.pbxproj (suffix left as "HiddifyPacketTunnel",
+      # deliberately not renamed — see tasks/01-baseline-fork.md).
       - uses: Apple-Actions/download-provisioning-profiles@v1
         with:
-          bundle-id: app.hiddify.com
+          bundle-id: com.beliberda.pupapp
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
       - uses: Apple-Actions/download-provisioning-profiles@v1
         with:
-          bundle-id: app.hiddify.com.SingBoxPacketTunnel
+          bundle-id: com.beliberda.pupapp.HiddifyPacketTunnel
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
@@ -522,7 +510,7 @@ jobs:
 
       - uses: Apple-Actions/upload-testflight-build@v4
         with:
-          app-path: 'out/Hiddify-iOS.ipa' 
+          app-path: 'out/Pup-iOS.ipa'
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

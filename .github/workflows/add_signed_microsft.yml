@@ -1,19 +1,21 @@
 name: Upload store MSIX to release
+# Disabled for this fork (2026-08-18): this downloaded Hiddify's own signed
+# Microsoft Store MSIX package (hardcoded store-id 9pdfnl3qv2s5, Hiddify's
+# listing) and attached it to *our* GitHub release — anyone downloading the
+# Windows build from our release page would silently get Hiddify's actual
+# binary, not this fork's. That's a correctness/trust bug for a rebrand, not
+# a judgment call, so it's disabled outright rather than left as an option.
+# See tasks/05-cicd.md.
 
 permissions:
   contents: write
 
 on:
-  release:
-    types: [released]   # Run the action when a GitHub release is published
-
-  # schedule:
-  #   - cron:  '0 */6 * * *'  # Run the action every 6 hours
-
   workflow_dispatch:    # Manually run the action
 
 jobs:
   upload-store-msix-to-release:
+    if: false
     runs-on: ubuntu-latest
 
     steps:
@@ -22,4 +24,4 @@ jobs:
       with:
         store-id: 9pdfnl3qv2s5
         token: ${{ secrets.GITHUB_TOKEN }}
-        asset-name-pattern: Hiddify-Windows-Setup-x64		# Optional
+        asset-name-pattern: Pup-Windows-Setup-x64		# Optional

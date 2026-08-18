@@ -68,6 +68,10 @@ app.*.map.json
 # Windows Self-Signed for msix
 windows/sign.pfx
 windows/sign.cer
+
+# Android release signing — never commit the keystore or its passwords.
+android/*.jks
+android/key.properties*
 .aider.input.history
 .aider.chat.history.md
 .aider.tags.cache.v4

@@ -1,13 +1,21 @@
 name: Publish to WinGet
+# Disabled for this fork (2026-08-18): upstream published under the
+# "Hiddify.Next"/"Hiddify.Next.Beta" identifiers in Microsoft's public winget
+# repository — not ours to publish under, and public package-manager listing
+# is out of scope for this project (CLAUDE.md, "Что НЕ входит в scope",
+# personal sideload/TestFlight distribution only). Left in the repo, disabled,
+# rather than deleted, in case a future decision to publish under our own
+# identifier (com.beliberda.pupapp) with our own WINGET_TOKEN reverses this.
+# See tasks/05-cicd.md.
 on:
-  release:
-    types: [released]
+  workflow_dispatch:
 
 env:
     IDENTIFIER: ${{ endsWith(github.event.release.tag_name, 'dev') && 'Hiddify.Next.Beta' || 'Hiddify.Next' }}
 
 jobs:
   publish:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: vedantmgoyal9/winget-releaser@2
