@@ -25,7 +25,7 @@ class LoggerController extends LoggyPrinter with InfraLogger {
   }
 
   static Future<void> postInit(bool debugMode) async {
-    final logLevel = debugMode && false ? LogLevel.all : LogLevel.info;
+    final logLevel = debugMode ? LogLevel.all : LogLevel.info;
     final logToFile = debugMode || (!Platform.isAndroid && !Platform.isIOS);
 
     if (!logToFile || kIsWeb) _instance.removePrinter("app");

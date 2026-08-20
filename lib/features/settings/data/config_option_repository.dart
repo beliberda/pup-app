@@ -48,11 +48,27 @@ abstract class ConfigOptions {
     mapFrom: Region.values.byName,
     mapTo: (value) => value.name,
   );
+  // Left at upstream default (false) -- 2026-08-20: this looked like a real fix
+  // for servers using transports sing-box doesn't support (XHTTP), and two real
+  // bugs blocking it *were* found and fixed on the Go side (ParseConfig silently
+  // dropping the caller's configOpt; the xray-core parsing branch being dead code
+  // behind `if false &&`). But the actual "xray" outbound type has no working
+  // implementation in this hiddify-sing-box fork -- its New() unconditionally
+  // returns "Xray is not implemented yet" (protocol/hiddify/xray/outbound.go).
+  // Turning this on doesn't fall back to a working alternate engine, it just
+  // trades one guaranteed failure for another -- worse, for outbounds that
+  // otherwise worked fine natively. Revisit if xray-core ever gets a real
+  // implementation upstream.
   static final useXrayCoreWhenPossible = PreferencesNotifier.create<bool, bool>("use-xray-core-when-possible", false);
   // static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
+  // Default debug (upstream default: warn) -- at warn, the core log only ever
+  // shows failures, with no trace of the connection attempt that led to them
+  // (handshake steps, DNS queries, routing decisions). debug is verbose enough
+  // to actually diagnose a "can't connect" report; full per-packet trace is
+  // still available manually in Settings if debug isn't enough.
   static final logLevel = PreferencesNotifier.create<LogLevel, String>(
     "log-level",
-    LogLevel.warn,
+    LogLevel.debug,
     mapFrom: LogLevel.values.byName,
     mapTo: (value) => value.name,
   );

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
-import 'package:hiddify/core/model/environment.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/actions_at_closing.dart';
 
@@ -120,11 +119,12 @@ abstract class Preferences {
 
 @Riverpod(keepAlive: true)
 class DebugModeNotifier extends _$DebugModeNotifier {
-  late final _pref = PreferencesEntry(
-    preferences: ref.watch(sharedPreferencesProvider).requireValue,
-    key: "debug_mode",
-    defaultValue: ref.read(environmentProvider) == Environment.dev,
-  );
+  // Default true (upstream default: dev-environment only) -- a normal
+  // release build otherwise ships with debug mode off, so app.log stays
+  // mostly empty and the core doesn't run with its verbose debug flag.
+  // Full logging by default matters more here than the small extra log
+  // volume for a client nobody but its own user runs.
+  late final _pref = PreferencesEntry(preferences: ref.watch(sharedPreferencesProvider).requireValue, key: "debug_mode", defaultValue: true);
 
   @override
   bool build() => _pref.read();
