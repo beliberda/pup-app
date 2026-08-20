@@ -1,4 +1,0 @@
-[submodule "hiddify-core"]
-	path = hiddify-core
-	url = https://github.com/hiddify/hiddify-core.git
-	branch = v3
