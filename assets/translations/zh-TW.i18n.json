@@ -95,7 +95,7 @@
   "intro": {
     "banner": "暢享無限制網路的所需一切",
     "termsAndPolicyCaution(rich)": "繼續即表示您同意 ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "由 Hiddify 以 ❤️ 製作 - ${tap_source(開源)} (${tap_license(授權)})"
+    "info(rich)": "基於 Hiddify (hiddify.com) - ${tap_source(開源)} (${tap_license(授權)})"
   },
   "pages": {
     "home": {

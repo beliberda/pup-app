@@ -95,7 +95,7 @@
   "intro": {
     "banner": "畅享无限制网络的所需一切",
     "termsAndPolicyCaution(rich)": "继续即表示您同意 ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "由 Hiddify 用 ❤️ 制作 - ${tap_source(开源)} (${tap_license(许可证)})"
+    "info(rich)": "基于 Hiddify (hiddify.com) - ${tap_source(开源)} (${tap_license(许可证)})"
   },
   "pages": {
     "home": {

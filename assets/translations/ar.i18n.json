@@ -101,7 +101,7 @@
   "intro": {
     "banner": "كل ما تحتاجه لإنترنت بلا قيود",
     "termsAndPolicyCaution(rich)": "بالاستمرار، أنت توافق على ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "صُنع بـ ❤️ بواسطة Hiddify - ${tap_source(مفتوح المصدر)} (${tap_license(الرخصة)})"
+    "info(rich)": "مبني على Hiddify (hiddify.com) - ${tap_source(مفتوح المصدر)} (${tap_license(الرخصة)})"
   },
   "pages": {
     "home": {

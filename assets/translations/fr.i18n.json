@@ -95,7 +95,7 @@
   "intro": {
     "banner": "Tout ce dont vous avez besoin pour un internet sans restrictions",
     "termsAndPolicyCaution(rich)": "En continuant, vous acceptez les ${tap(@:pages.about.termsAndConditions)}",
-    "info(rich)": "Fait avec ❤️ par Hiddify - ${tap_source(Open Source)} (${tap_license(Licence)})"
+    "info(rich)": "Basé sur Hiddify (hiddify.com) - ${tap_source(Open Source)} (${tap_license(Licence)})"
   },
   "pages": {
     "home": {
