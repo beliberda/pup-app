@@ -284,7 +284,20 @@ android-aab-release:
 	  --build-dart-define=sentry_dsn=$(SENTRY_DSN) \
 	  --build-dart-define=release=google-play
 
-windows-release: windows-zip-release windows-exe-release windows-msix-release
+windows-release: windows-zip-release windows-exe-release windows-msix-release-if-configured
+
+# MSIX (unlike the plain exe/zip) has to be code-signed to actually be
+# installable, so there's no useful unsigned fallback the way there is for
+# Android's debug-signing fallback -- just skip it when no cert is configured
+# (see "Setup Windows Signing Properties" in .github/workflows/build.yml,
+# which only writes windows/sign.pfx when WINDOWS_SIGNING_KEY is set) instead
+# of failing the whole windows-release target on "certificate password is empty".
+windows-msix-release-if-configured:
+	@if [ -s windows/sign.pfx ]; then \
+		$(MAKE) windows-msix-release; \
+	else \
+		echo "Skipping MSIX package: windows/sign.pfx not present (no WINDOWS_SIGNING_KEY configured)"; \
+	fi
 
 windows-zip-release:
 	fastforge package \

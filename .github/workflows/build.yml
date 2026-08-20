@@ -221,7 +221,13 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: Setup Android Signing Properties
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') }}
+        # android/app/build.gradle already falls back to debug signing when
+        # key.properties doesn't exist (hasKeyStore = keystorePropertiesFile.exists()).
+        # Gating this on the secret being non-empty lets that fallback actually
+        # trigger on forks/PRs without a real release keystore configured,
+        # instead of writing an empty key.jks that Gradle then fails to parse
+        # ("Tag number over 30 is not supported").
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'android') && secrets.ANDROID_SIGNING_KEY != '' }}
         run: |
           echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > android/key.jks
           echo "storeFile=$(pwd)/android/key.jks" > android/key.properties
@@ -230,7 +236,12 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}" >> android/key.properties
 
       - name: Setup Windows Signing Properties
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') }}
+        # See windows-msix-release in the top-level Makefile: it skips MSIX
+        # packaging entirely when windows\sign.pfx is missing/empty, so this
+        # only needs to run (and only needs to succeed) when a real cert is
+        # configured -- avoids writing an empty .pfx that fastforge/msix would
+        # otherwise fail on with a useless "certificate password is empty" error.
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') && secrets.WINDOWS_SIGNING_KEY != '' }}
         run: |
             [IO.File]::WriteAllBytes("windows\sign.pfx", [Convert]::FromBase64String("${{ secrets.WINDOWS_SIGNING_KEY }}"))
             (Get-Content "windows\packaging\msix\make_config.yaml") -replace '^certificate_password:.*$', 'certificate_password: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}' | Set-Content "windows\packaging\msix\make_config.yaml"
@@ -258,7 +269,7 @@ jobs:
           make ${{ matrix.platform }}-release
 
       - name: Code Sign
-        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') }}
+        if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') && secrets.WINDOWS_SIGNING_KEY != '' }}
         uses: hiddify/signtool-code-sign-sha256@main
         with:
           certificate: '${{ secrets.WINDOWS_SIGNING_KEY }}'
