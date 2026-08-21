@@ -78,6 +78,14 @@ const Map<String, Map<String, dynamic>> protocolSchemaValues = {
     "resolvers": ["8.8.8.8:53", "8.8.4.4:53"],
     "tunnel_per_resolver": 4,
   },
+  "olcrtc": {
+    "type": "olcrtc",
+    "tag": "olcrtc-out",
+    "provider": "jitsi",
+    "room_id": "https://meet.example.org/myroom",
+    "key": "64_hex_chars_shared_with_the_server",
+    "transport": "datachannel",
+  },
   "vless": {
     "type": "vless",
     "tag": "vless-out",
@@ -358,6 +366,7 @@ const Map<String, List<String>> possibleValues = {
     "mieru",
     "naive",
     "anytls",
+    "olcrtc",
   ],
   "config.endpoints.type": <String>["wireguard", "warp"],
 };

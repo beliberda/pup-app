@@ -400,6 +400,7 @@ class ProfileParser {
         'awg' => fragment ?? ProxyType.awg.label,
         'shadowtls' => fragment ?? ProxyType.shadowtls.label,
         'mieru' => fragment ?? ProxyType.mieru.label,
+        'olcrtc' => fragment ?? ProxyType.olcrtc.label,
         'warp' => fragment ?? ProxyType.warp.label,
         _ => null,
       };

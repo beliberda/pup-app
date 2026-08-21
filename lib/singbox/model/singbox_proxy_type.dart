@@ -19,6 +19,7 @@ enum ProxyType {
   tuic("TUIC"),
   hysteria2("Hysteria2"),
   mieru("Mieru"),
+  olcrtc("olcRTC"),
 
   selector("Selector"),
   urltest("URLTest"),
