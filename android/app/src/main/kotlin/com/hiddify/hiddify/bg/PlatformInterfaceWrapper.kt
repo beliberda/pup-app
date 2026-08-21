@@ -31,6 +31,17 @@ import java.security.KeyStore
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
+// Shared across all PlatformInterfaceWrapper implementors (there is only
+// ever one VPN service instance active at a time, but ConnectivityManager/
+// PackageManager are process-wide singletons regardless). Serializes
+// findConnectionOwner() calls as defense-in-depth against a suspected
+// race in the vendored gomobile v0.1.11 Java ref-tracker bridge, seen to
+// abort the process with "Unknown reference: N" under bursty concurrent
+// calls from the Go side (see route.platformSearcher in hiddify-sing-box,
+// which caches/dedups on the Go side — this is the belt-and-suspenders
+// counterpart on the JVM side).
+private val findConnectionOwnerLock = Any()
+
 interface PlatformInterfaceWrapper : PlatformInterface {
     override fun usePlatformAutoDetectInterfaceControl(): Boolean = true
 
@@ -51,27 +62,29 @@ interface PlatformInterfaceWrapper : PlatformInterface {
         destinationAddress: String,
         destinationPort: Int,
     ): ConnectionOwner {
-        try {
-            val uid =
-                Application.connectivity.getConnectionOwnerUid(
-                    ipProtocol,
-                    InetSocketAddress(sourceAddress, sourcePort),
-                    InetSocketAddress(destinationAddress, destinationPort),
-                )
+        synchronized(findConnectionOwnerLock) {
+            try {
+                val uid =
+                    Application.connectivity.getConnectionOwnerUid(
+                        ipProtocol,
+                        InetSocketAddress(sourceAddress, sourcePort),
+                        InetSocketAddress(destinationAddress, destinationPort),
+                    )
 //            if (uid == Process.INVALID_UID)error("android: connection owner not found")
 
-            val owner = ConnectionOwner()
-            owner.userId = uid
-            if (uid!=Process.INVALID_UID) {
-                val packages = Application.packageManager.getPackagesForUid(uid)
-                owner.userName = packages?.firstOrNull() ?: ""
-                owner.androidPackageName = owner.userName
+                val owner = ConnectionOwner()
+                owner.userId = uid
+                if (uid!=Process.INVALID_UID) {
+                    val packages = Application.packageManager.getPackagesForUid(uid)
+                    owner.userName = packages?.firstOrNull() ?: ""
+                    owner.androidPackageName = owner.userName
+                }
+                return owner
+            } catch (e: Exception) {
+                Log.e("PlatformInterface", "getConnectionOwnerUid", e)
+                e.printStackTrace(System.err)
+                throw e
             }
-            return owner
-        } catch (e: Exception) {
-            Log.e("PlatformInterface", "getConnectionOwnerUid", e)
-            e.printStackTrace(System.err)
-            throw e
         }
     }
 

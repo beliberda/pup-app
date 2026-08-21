@@ -33,10 +33,23 @@ type platformInterfaceWrapper struct {
 	defaultInterface       *control.Interface
 	isExpensive            bool
 	isConstrained          bool
+
+	// Bounds concurrent calls into the gomobile/JNI FindConnectionOwner
+	// bridge. Mitigates a suspected TOCTOU race in the vendored gomobile
+	// v0.1.11 Java ref-tracker (bind/java/seq_android.c.support) that has
+	// been observed to abort the process with `Unknown reference: N`
+	// under bursty concurrent cross-language calls (route.platformSearcher
+	// caches results and dedups concurrent misses for the same flow, but
+	// this is defense-in-depth at the actual language boundary).
+	connectionOwnerSem chan struct{}
 }
 
 func WrapPlatformInterface(platformInterface PlatformInterface) adapter.PlatformInterface {
-	return &platformInterfaceWrapper{iif: platformInterface, useProcFS: platformInterface.UseProcFS()}
+	return &platformInterfaceWrapper{
+		iif:                platformInterface,
+		useProcFS:          platformInterface.UseProcFS(),
+		connectionOwnerSem: make(chan struct{}, 1),
+	}
 }
 func (w *platformInterfaceWrapper) Initialize(networkManager adapter.NetworkManager) error {
 	w.networkManager = networkManager
@@ -199,7 +212,9 @@ func (w *platformInterfaceWrapper) FindConnectionOwner(request *adapter.FindConn
 		}, nil
 	}
 
+	w.connectionOwnerSem <- struct{}{}
 	result, err := w.iif.FindConnectionOwner(request.IpProtocol, request.SourceAddress, request.SourcePort, request.DestinationAddress, request.DestinationPort)
+	<-w.connectionOwnerSem
 	if err != nil {
 		return nil, err
 	}
