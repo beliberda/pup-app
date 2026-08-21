@@ -189,6 +189,94 @@
       "termsAndConditions": "條款與條件",
       "privacyPolicy": "隱私權政策"
     },
+    "selfCheck": {
+      "title": "VPN 可見性檢查",
+      "subtitle": "執行與沒有 root 權限的背景應用程式偵測此 VPN 時相同類型的檢查——依你目前的伺服器與設定，立即進行。",
+      "run": "開始檢查",
+      "rerun": "重新檢查",
+      "running": "正在檢查…",
+      "notRunYet": "本次工作階段尚未執行——點按下方「開始檢查」。",
+      "verdict": {
+        "good": "看起來像一般流量",
+        "warning": "有幾點值得留意",
+        "bad": "被偵測到的機率較高",
+        "info": "執行檢查以查看結果"
+      },
+      "status": {
+        "good": "正常",
+        "warning": "警告",
+        "bad": "已偵測到",
+        "info": "資訊",
+        "error": "檢查失敗"
+      },
+      "items": {
+        "localPorts": {
+          "title": "本機連接埠（類 BypassChecker 掃描）",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}：已在設定中啟用（連接埠 ${port}）——這會開放一個本機 API，任何具備一般 INTERNET 權限的應用程式都能在 127.0.0.1 上存取它。",
+            "openUnexpected": "${label}：連接埠 ${port} 為開啟狀態，儘管它在設定中已停用——異常。",
+            "closedAsExpected": "${label}：已關閉，符合預期。",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound：始終開啟（連接埠 ${port}，每次安裝隨機指派），無驗證權杖——這是引擎唯一無條件開放的本機 inbound，且依 TUN 模式的設計，此用戶端無法將其停用。"
+          }
+        },
+        "interfaceName": {
+          "title": "網路介面名稱",
+          "detail": {
+            "notConnected": "VPN 尚未連線——請先連線通道以檢查目前作用中介面的名稱。",
+            "error": "無法列出網路介面：${error}",
+            "good": "作用中介面：${names}。沒有任何一個符合預設的 VPN 命名模式。",
+            "warning": "作用中介面：${names}。外觀類似預設值的名稱：${suspicious} —— 簡易偵測器會用正規表示式比對 tun/tap/wg/utun/ppp 這類介面名稱。重新命名的邏輯已寫入引擎原始碼，但要等原生引擎從原始碼重新建置後才會生效。"
+          }
+        },
+        "ipReputation": {
+          "title": "出口 IP 信譽",
+          "flags": {
+            "datacenter": "資料中心",
+            "vpn": "vpn",
+            "proxy": "代理",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN 尚未連線——請先連線通道以檢查出口 IP 的信譽。",
+            "error": "無法透過通道連線至 ${endpoint}：${error}",
+            "good": "出口 IP ${label} 未被 ipapi.is 標記為資料中心/VPN/代理/Tor。",
+            "bad": "出口 IP ${label} 被標記為：${flags}。這是現實中最主要的偵測手法（銀行／購物平台使用的 GeoIP 型檢測）——解法是選擇信譽良好的伺服器 IP，而不是此用戶端中的任何設定。"
+          }
+        },
+        "cdnColo": {
+          "title": "CDN 邊緣節點位置",
+          "detail": {
+            "notConnected": "VPN 尚未連線——請先連線通道以檢查 CDN 邊緣節點位置。",
+            "error": "無法透過通道連線至 ${endpoint}：${error}",
+            "info": "Cloudflare 偵測到此連線經由邊緣節點「${colo}」到達（其對你所在國家的推測：${loc}）。僅供參考——請自行與伺服器的實際所在地比對。"
+          }
+        },
+        "rtt": {
+          "title": "RTT 三角定位",
+          "detail": {
+            "notConnected": "VPN 尚未連線——請先連線通道以測量 RTT 三角定位。",
+            "notEnoughData": "成功量測次數不足以比較 RTT（部分參考主機無法連線）。",
+            "good": "至 RU 參考主機的平均 RTT：${avgRu}ms，至境外參考主機：${avgForeign}ms。出口節點在地理位置上看起來比境外參考點更接近 RU。",
+            "warning": "至 RU 參考主機的平均 RTT：${avgRu}ms，至境外參考主機：${avgForeign}ms。出口節點看起來比境外參考點離 RU 更遠——三角定位推論可能會因此判斷「很可能不在／不靠近俄羅斯」。這只是低可信度的訊號，並非確鑿的偵測結果。"
+          }
+        },
+        "dnsLeak": {
+          "title": "DNS / WebRTC / IPv6 洩漏",
+          "detail": "此處未自動化——DNS/WebRTC/IPv6 洩漏需要真實的瀏覽器環境（尤其是 WebRTC，無法從 Dart 探測）。請在連線狀態下手動使用 browserleaks.com 或 ipleak.net 檢查，尤其是在變更路由規則之後。"
+        },
+        "transportVpn": {
+          "title": "系統 VPN 訊號",
+          "detail": "任何應用程式都能透過官方的 ConnectivityManager/NEVPNManager API（TRANSPORT_VPN）看到裝置上有 VPN 正在運作——這是作業系統的預期行為，在沒有 root/越獄的情況下無法隱藏。它只會揭露「VPN 已開啟」這件事，不會揭露是哪一個或伺服器 IP，因此此處不將其視為一項發現。"
+        }
+      },
+      "limitationNotice": "此檢查僅涵蓋沒有 root 權限的一般應用程式可見的內容——與銀行或購物類應用程式的背景處理程序所採用的威脅模型相同。它不會模擬更深層的 root/Shizuku 層級檢查，因為那些不屬於此威脅模型。"
+    },
     "settings": {
       "title": "設定",
       "resetTunnel": "重設 VPN 設定檔",
@@ -316,6 +404,11 @@
             "update": "更新值",
             "clearList": "清除清單",
             "clearListMsg": "所有項目已刪除"
+          },
+          "windowsApps": {
+            "pageTitle": "已安裝的應用程式",
+            "clearSelection": "清除選取",
+            "noneFound": "找不到應用程式 — 請改用手動輸入處理程序路徑"
           }
         },
         "generalOptions": {
@@ -345,6 +438,10 @@
             "prefer": "首選",
             "only": "僅"
           },
+          "splitTunnelingDesktop": {
+            "title": "分流通道",
+            "subtitle": "透過以處理程序為基礎的規則，將特定應用程式路由到通道之外"
+          },
           "perAppProxy": {
             "title": "依應用程式代理",
             "hideSysApps": "隱藏系統應用程式",
@@ -359,6 +456,7 @@
                 "file": "匯出選擇到檔案"
               },
               "shareToAll": "分享給所有人",
+              "loadRuTemplate": "載入俄羅斯應用程式範本",
               "clearAllSelections": "清除所有選擇"
             },
             "modes": {
@@ -396,6 +494,13 @@
           "bypassLan": {
             "name": "繞過區域網路",
             "description": ""
+          }
+        },
+        "predefinedApps": {
+          "title": "應用程式套裝",
+          "ruApps": {
+            "name": "俄羅斯應用程式（略過）",
+            "description": "將主要的俄羅斯銀行、電商和社群/通訊應用程式加入略過清單，讓它們使用你的真實本地 IP 而非 VPN"
           }
         }
       },

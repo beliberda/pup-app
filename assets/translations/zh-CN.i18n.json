@@ -189,6 +189,94 @@
       "termsAndConditions": "条款与条件",
       "privacyPolicy": "隐私政策"
     },
+    "selfCheck": {
+      "title": "VPN 可见性检测",
+      "subtitle": "运行与无 root 权限的后台应用检测此 VPN 时相同类型的检查——基于你当前的服务器和设置，立即进行。",
+      "run": "开始检测",
+      "rerun": "重新检测",
+      "running": "正在检测…",
+      "notRunYet": "本次会话尚未运行——点击下方「开始检测」。",
+      "verdict": {
+        "good": "看起来像普通流量",
+        "warning": "有一些值得关注的地方",
+        "bad": "被检测到的可能性较高",
+        "info": "运行检测以查看结论"
+      },
+      "status": {
+        "good": "正常",
+        "warning": "警告",
+        "bad": "已检测到",
+        "info": "信息",
+        "error": "检测失败"
+      },
+      "items": {
+        "localPorts": {
+          "title": "本地端口（类 BypassChecker 扫描）",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}：在设置中已启用（端口 ${port}）——这会开放一个本地 API，任何拥有普通 INTERNET 权限的应用都能在 127.0.0.1 上访问它。",
+            "openUnexpected": "${label}：端口 ${port} 处于开启状态，尽管它在设置中已被禁用——异常。",
+            "closedAsExpected": "${label}：已关闭，符合预期。",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound：始终开启（端口 ${port}，每次安装随机分配），无鉴权令牌——这是引擎唯一无条件开放的本地 inbound，且由于 TUN 模式的设计，此客户端无法将其关闭。"
+          }
+        },
+        "interfaceName": {
+          "title": "网络接口名称",
+          "detail": {
+            "notConnected": "VPN 未连接——请先连接隧道以检查当前活动接口的名称。",
+            "error": "无法列出网络接口：${error}",
+            "good": "活动接口：${names}。没有一个匹配默认的 VPN 命名模式。",
+            "warning": "活动接口：${names}。看起来像默认命名的接口：${suspicious} —— 简单的检测手段会用正则匹配 tun/tap/wg/utun/ppp 这类接口名。重命名逻辑已经写入引擎源码，但要等原生引擎从源码重新编译后才会生效。"
+          }
+        },
+        "ipReputation": {
+          "title": "出口 IP 信誉",
+          "flags": {
+            "datacenter": "数据中心",
+            "vpn": "vpn",
+            "proxy": "代理",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN 未连接——请先连接隧道以检查出口 IP 的信誉。",
+            "error": "无法通过隧道访问 ${endpoint}：${error}",
+            "good": "出口 IP ${label} 未被 ipapi.is 标记为数据中心/VPN/代理/Tor。",
+            "bad": "出口 IP ${label} 被标记为：${flags}。这是现实中最主要的检测手段（银行/电商平台使用的基于 GeoIP 的检测）——解决方法是选择信誉良好的服务器 IP，而不是此客户端中的任何设置。"
+          }
+        },
+        "cdnColo": {
+          "title": "CDN 边缘节点位置",
+          "detail": {
+            "notConnected": "VPN 未连接——请先连接隧道以检查 CDN 边缘节点位置。",
+            "error": "无法通过隧道访问 ${endpoint}：${error}",
+            "info": "Cloudflare 看到此连接经由边缘节点 “${colo}” 到达（其对你所在国家的判断：${loc}）。仅供参考——请自行与服务器的实际所在地对比。"
+          }
+        },
+        "rtt": {
+          "title": "RTT 三角定位",
+          "detail": {
+            "notConnected": "VPN 未连接——请先连接隧道以测量 RTT 三角定位。",
+            "notEnoughData": "成功的测量次数不足以比较 RTT（部分参考主机不可达）。",
+            "good": "到 RU 参考主机的平均 RTT：${avgRu}ms，到境外参考主机：${avgForeign}ms。出口节点在地理位置上看起来比境外参考点更接近 RU。",
+            "warning": "到 RU 参考主机的平均 RTT：${avgRu}ms，到境外参考主机：${avgForeign}ms。出口节点看起来比境外参考点离 RU 更远——三角定位启发式算法可能会据此判断“很可能不在/不靠近俄罗斯”。这只是一个低置信度的信号，并非确凿的检测结果。"
+          }
+        },
+        "dnsLeak": {
+          "title": "DNS / WebRTC / IPv6 泄露",
+          "detail": "此处未自动化——DNS/WebRTC/IPv6 泄露需要真实的浏览器环境（尤其是 WebRTC，无法从 Dart 探测）。请在连接状态下手动使用 browserleaks.com 或 ipleak.net 检查，尤其是在修改路由规则之后。"
+        },
+        "transportVpn": {
+          "title": "系统 VPN 信号",
+          "detail": "任何应用都可以通过官方的 ConnectivityManager/NEVPNManager API（TRANSPORT_VPN）看到设备上有 VPN 处于活动状态——这是操作系统的预期行为，在没有 root/越狱的情况下无法隐藏。它只会暴露“有 VPN 已开启”这一事实，而不会暴露是哪一个或服务器 IP，因此这里不将其视为一项检测发现。"
+        }
+      },
+      "limitationNotice": "此检测仅涵盖无 root 权限的普通应用可见的内容——与银行或电商类应用的后台进程所使用的威胁模型相同。它不会模拟更深层的 root/Shizuku 级别检查，因为那些不属于此威胁模型。"
+    },
     "settings": {
       "title": "设置",
       "resetTunnel": "重置 VPN 配置文件",
@@ -316,6 +404,11 @@
             "update": "更新值",
             "clearList": "清空列表",
             "clearListMsg": "所有项目已删除"
+          },
+          "windowsApps": {
+            "pageTitle": "已安装的应用",
+            "clearSelection": "清除选择",
+            "noneFound": "未找到应用 — 请尝试手动输入进程路径"
           }
         },
         "generalOptions": {
@@ -345,6 +438,10 @@
             "prefer": "首选",
             "only": "专享"
           },
+          "splitTunnelingDesktop": {
+            "title": "分流隧道",
+            "subtitle": "通过基于进程的规则，将特定应用的流量路由到隧道之外"
+          },
           "perAppProxy": {
             "title": "分应用代理",
             "hideSysApps": "隐藏系统应用",
@@ -359,6 +456,7 @@
                 "file": "导出选择到文件"
               },
               "shareToAll": "分享给所有人",
+              "loadRuTemplate": "加载俄罗斯应用模板",
               "clearAllSelections": "清除所有选择"
             },
             "modes": {
@@ -396,6 +494,13 @@
           "bypassLan": {
             "name": "绕过局域网",
             "description": ""
+          }
+        },
+        "predefinedApps": {
+          "title": "应用套装",
+          "ruApps": {
+            "name": "俄罗斯应用（绕过）",
+            "description": "将主要的俄罗斯银行、电商和社交/通讯应用添加到绕过列表，使它们使用你的真实本地 IP 而非 VPN"
           }
         }
       },

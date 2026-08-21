@@ -189,6 +189,94 @@
       "termsAndConditions": "Şartlar ve Koşullar",
       "privacyPolicy": "Gizlilik Politikası"
     },
+    "selfCheck": {
+      "title": "VPN görünürlük kontrolü",
+      "subtitle": "Root olmadan çalışan bir arka plan uygulamasının bu VPN'i tespit etmek için kullanabileceği türden kontrolleri, mevcut sunucunuzda ve ayarlarınızda, hemen şimdi çalıştırır.",
+      "run": "Kontrolü çalıştır",
+      "rerun": "Tekrar çalıştır",
+      "running": "Kontroller çalışıyor…",
+      "notRunYet": "Bu oturumda henüz çalıştırılmadı — aşağıdaki \"Kontrolü çalıştır\" düğmesine dokunun.",
+      "verdict": {
+        "good": "Sıradan trafiğe benziyor",
+        "warning": "Göz atmaya değer birkaç nokta var",
+        "bad": "Tespit edilme olasılığı yüksek",
+        "info": "Sonucu görmek için kontrolü çalıştırın"
+      },
+      "status": {
+        "good": "Tamam",
+        "warning": "Uyarı",
+        "bad": "Tespit edildi",
+        "info": "Bilgi",
+        "error": "Kontrol başarısız oldu"
+      },
+      "items": {
+        "localPorts": {
+          "title": "Yerel portlar (BypassChecker tarzı tarama)",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}: ayarlarda etkin (port ${port}) — bu, sade INTERNET izni olan herhangi bir uygulamanın 127.0.0.1 üzerinden erişebileceği yerel bir API açar.",
+            "openUnexpected": "${label}: ayarlarda devre dışı olmasına rağmen ${port} portu AÇIK — beklenmedik.",
+            "closedAsExpected": "${label}: beklendiği gibi kapalı.",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound: her zaman açık (port ${port}, kurulumda rastgele atanır), kimlik doğrulama belirteci yok — bu, motorun koşulsuz tek yerel inbound'udur ve TUN modunun tasarımı gereği bu istemciden devre dışı bırakılamaz."
+          }
+        },
+        "interfaceName": {
+          "title": "Ağ arayüzü adı",
+          "detail": {
+            "notConnected": "VPN bağlı değil — etkin arayüz adını kontrol etmek için tüneli bağlayın.",
+            "error": "Ağ arayüzleri listelenemedi: ${error}",
+            "good": "Etkin arayüzler: ${names}. Hiçbiri varsayılan VPN adlandırma kalıplarıyla eşleşmiyor.",
+            "warning": "Etkin arayüzler: ${names}. Varsayılana benzeyen adlar: ${suspicious} — basit dedektörler tun/tap/wg/utun/ppp gibi arayüz adlarını regex ile eşleştirir. Yeniden adlandırma motor kaynak kodunda zaten yazılmış durumda, ancak yerel motor kaynaktan yeniden derlenene kadar etkin değil."
+          }
+        },
+        "ipReputation": {
+          "title": "Çıkış IP itibarı",
+          "flags": {
+            "datacenter": "veri merkezi",
+            "vpn": "vpn",
+            "proxy": "proxy",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN bağlı değil — çıkış IP itibarını kontrol etmek için tüneli bağlayın.",
+            "error": "${endpoint} adresine tünel üzerinden ulaşılamadı: ${error}",
+            "good": "Çıkış IP'si ${label}, ipapi.is tarafından veri merkezi/VPN/proxy/Tor olarak işaretlenmemiş.",
+            "bad": "Çıkış IP'si ${label} şu şekilde işaretlenmiş: ${flags}. Bu, gerçek dünyadaki başlıca tespit vektörüdür (bankalar/pazar yerlerinin kullandığı GeoIP tabanlı kontroller) — bu istemcideki bir ayarla değil, temiz itibara sahip bir sunucu IP'si seçilerek çözülür."
+          }
+        },
+        "cdnColo": {
+          "title": "CDN uç konumu",
+          "detail": {
+            "notConnected": "VPN bağlı değil — CDN uç konumunu kontrol etmek için tüneli bağlayın.",
+            "error": "${endpoint} adresine tünel üzerinden ulaşılamadı: ${error}",
+            "info": "Cloudflare bu bağlantının \"${colo}\" ucu üzerinden geldiğini görüyor (ülke tahmini: ${loc}). Yalnızca bilgi amaçlıdır — sunucunuzun gerçekte nerede olduğuyla kendiniz karşılaştırın."
+          }
+        },
+        "rtt": {
+          "title": "RTT üçgenlemesi",
+          "detail": {
+            "notConnected": "VPN bağlı değil — RTT üçgenlemesini ölçmek için tüneli bağlayın.",
+            "notEnoughData": "RTT karşılaştırması için yeterli başarılı ölçüm yok (bazı referans sunuculara ulaşılamadı).",
+            "good": "RU referans sunucularına ortalama RTT: ${avgRu} ms, yabancı referans sunuculara: ${avgForeign} ms. Çıkış noktası, yabancı referanslara göre RU'ya coğrafi olarak daha yakın görünüyor.",
+            "warning": "RU referans sunucularına ortalama RTT: ${avgRu} ms, yabancı referans sunuculara: ${avgForeign} ms. Çıkış noktası, yabancı referanslara göre RU'dan daha uzak görünüyor — bir üçgenleme sezgiseli bunu \"muhtemelen Rusya'da/yakınında değil\" olarak yorumlayabilir. Bu düşük güvenilirlikte bir sinyaldir, kesin bir tespit değildir."
+          }
+        },
+        "dnsLeak": {
+          "title": "DNS / WebRTC / IPv6 sızıntıları",
+          "detail": "Burada otomatikleştirilmemiştir — DNS/WebRTC/IPv6 sızıntıları gerçek bir tarayıcı bağlamı gerektirir (özellikle WebRTC, Dart'tan test edilemez). Bağlıyken, özellikle yönlendirme kurallarını değiştirdikten sonra, browserleaks.com veya ipleak.net ile elle kontrol edin."
+        },
+        "transportVpn": {
+          "title": "Sistem VPN sinyali",
+          "detail": "Herhangi bir uygulama, resmi ConnectivityManager/NEVPNManager API'si (TRANSPORT_VPN) aracılığıyla bu cihazda bir VPN'in etkin olduğunu görebilir — bu, beklenen işletim sistemi davranışıdır ve root/jailbreak olmadan gizlenemez. Yalnızca \"bir VPN açık\" olduğunu ortaya çıkarır, hangisi olduğunu veya sunucu IP'sini asla göstermez, bu yüzden burada bir bulgu olarak değerlendirilmez."
+        }
+      },
+      "limitationNotice": "Bu yalnızca root olmayan sıradan bir uygulamanın görebileceklerini kontrol eder — bankacılık veya pazar yeri uygulamasındaki bir arka plan sürecinin tehdit modeliyle aynıdır. Bu tehdit modelinin parçası olmadığından, daha derin root/Shizuku düzeyindeki kontrolleri simüle etmez."
+    },
     "settings": {
       "title": "Ayarlar",
       "resetTunnel": "VPN profilini sıfırla",
@@ -316,6 +404,11 @@
             "update": "Değeri güncelle",
             "clearList": "Listeyi temizle",
             "clearListMsg": "Tüm öğeler silindi"
+          },
+          "windowsApps": {
+            "pageTitle": "Yüklü uygulamalar",
+            "clearSelection": "Seçimi temizle",
+            "noneFound": "Uygulama bulunamadı — bunun yerine işlem yolunu elle girmeyi deneyin"
           }
         },
         "generalOptions": {
@@ -345,6 +438,10 @@
             "prefer": "Tercih edilen",
             "only": "Özel"
           },
+          "splitTunnelingDesktop": {
+            "title": "Bölünmüş tünelleme",
+            "subtitle": "Belirli uygulamaları işlem tabanlı kurallarla tünelin dışına yönlendirir"
+          },
           "perAppProxy": {
             "title": "Uygulama bazlı proxy",
             "hideSysApps": "Sistem uygulamalarını gizle",
@@ -359,6 +456,7 @@
                 "file": "Seçimi dosyaya aktar"
               },
               "shareToAll": "Herkesle paylaş",
+              "loadRuTemplate": "RU uygulama şablonunu yükle",
               "clearAllSelections": "Tüm seçimleri temizle"
             },
             "modes": {
@@ -396,6 +494,13 @@
           "bypassLan": {
             "name": "LAN'ı atla",
             "description": ""
+          }
+        },
+        "predefinedApps": {
+          "title": "Uygulama paketleri",
+          "ruApps": {
+            "name": "Rus uygulamaları (atlama)",
+            "description": "Büyük Rus bankacılık, pazar yeri ve sosyal/mesajlaşma uygulamalarını atlama listesine ekler, böylece VPN yerine gerçek yerel IP'nizi kullanırlar"
           }
         }
       },

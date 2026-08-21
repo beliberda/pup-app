@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/features/chain/overview/chain_quick_settings.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -41,6 +42,15 @@ class QuickSettingsModal extends HookConsumerWidget {
             const LanSharingPreferenceWidget(),
             const Divider(height: 2, thickness: 2),
             const ChainQuickSettings(),
+            const Divider(height: 2, thickness: 2),
+            ListTile(
+              leading: const Icon(Icons.security_rounded),
+              title: Text(t.pages.selfCheck.title),
+              onTap: () {
+                context.pop();
+                context.goNamed('selfCheck');
+              },
+            ),
             // const Gap(12),
             // ListTile(
             //   leading: const Icon(Icons.cloud_rounded),

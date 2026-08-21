@@ -189,6 +189,94 @@
       "termsAndConditions": "Términos y condiciones",
       "privacyPolicy": "Política de privacidad"
     },
+    "selfCheck": {
+      "title": "Comprobación de visibilidad de VPN",
+      "subtitle": "Ejecuta el mismo tipo de comprobaciones que una app en segundo plano sin root podría usar para detectar esta VPN, en tu servidor y configuración actuales, ahora mismo.",
+      "run": "Ejecutar comprobación",
+      "rerun": "Volver a ejecutar",
+      "running": "Ejecutando comprobaciones…",
+      "notRunYet": "Aún no se ha ejecutado en esta sesión — toca «Ejecutar comprobación» abajo.",
+      "verdict": {
+        "good": "Parece tráfico normal",
+        "warning": "Hay algunos puntos a revisar",
+        "bad": "Alta probabilidad de detección",
+        "info": "Ejecuta la comprobación para ver un veredicto"
+      },
+      "status": {
+        "good": "OK",
+        "warning": "Advertencia",
+        "bad": "Detectado",
+        "info": "Información",
+        "error": "Error en la comprobación"
+      },
+      "items": {
+        "localPorts": {
+          "title": "Puertos locales (escaneo tipo BypassChecker)",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}: habilitado en los ajustes (puerto ${port}) — esto abre una API local accesible para cualquier app con el permiso INTERNET normal en 127.0.0.1.",
+            "openUnexpected": "${label}: el puerto ${port} está ABIERTO aunque está deshabilitado en los ajustes — inesperado.",
+            "closedAsExpected": "${label}: cerrado, como se esperaba.",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound: siempre activo (puerto ${port}, aleatorio en cada instalación), sin token de autenticación — es el único inbound local incondicional del motor y, por diseño del modo TUN, no se puede deshabilitar desde este cliente."
+          }
+        },
+        "interfaceName": {
+          "title": "Nombre de la interfaz de red",
+          "detail": {
+            "notConnected": "VPN no conectada — conecta el túnel para comprobar el nombre de la interfaz activa.",
+            "error": "No se pudo obtener la lista de interfaces de red: ${error}",
+            "good": "Interfaces activas: ${names}. Ninguna coincide con los patrones de nombre típicos de VPN.",
+            "warning": "Interfaces activas: ${names}. Nombres con aspecto predeterminado: ${suspicious} — los detectores simples buscan por regex nombres de interfaz como tun/tap/wg/utun/ppp. El cambio de nombre ya está implementado en el código del motor, pero está inactivo hasta que el motor nativo se recompile desde el código fuente."
+          }
+        },
+        "ipReputation": {
+          "title": "Reputación de la IP de salida",
+          "flags": {
+            "datacenter": "centro de datos",
+            "vpn": "vpn",
+            "proxy": "proxy",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN no conectada — conecta el túnel para comprobar la reputación de la IP de salida.",
+            "error": "No se pudo contactar con ${endpoint} a través del túnel: ${error}",
+            "good": "La IP de salida ${label} no está marcada por ipapi.is como centro de datos/VPN/proxy/Tor.",
+            "bad": "La IP de salida ${label} está marcada como: ${flags}. Este es el principal vector de detección real (comprobaciones basadas en GeoIP que usan bancos y marketplaces) — se soluciona eligiendo un servidor con una IP de reputación limpia, no con ningún ajuste de este cliente."
+          }
+        },
+        "cdnColo": {
+          "title": "Ubicación del edge de CDN",
+          "detail": {
+            "notConnected": "VPN no conectada — conecta el túnel para comprobar la ubicación del edge de CDN.",
+            "error": "No se pudo contactar con ${endpoint} a través del túnel: ${error}",
+            "info": "Cloudflare ve esta conexión llegando por el edge «${colo}» (su estimación de tu país: ${loc}). Solo informativo — compáralo tú mismo con la ubicación real de tu servidor."
+          }
+        },
+        "rtt": {
+          "title": "Triangulación por RTT",
+          "detail": {
+            "notConnected": "VPN no conectada — conecta el túnel para medir la triangulación por RTT.",
+            "notEnoughData": "No hay mediciones suficientes para comparar el RTT (algunos hosts de referencia no están disponibles).",
+            "good": "RTT medio a hosts de referencia de RU: ${avgRu}ms, a hosts extranjeros: ${avgForeign}ms. El punto de salida parece geográficamente más cercano a RU que a las referencias extranjeras.",
+            "warning": "RTT medio a hosts de referencia de RU: ${avgRu}ms, a hosts extranjeros: ${avgForeign}ms. El punto de salida parece más lejano de RU que de las referencias extranjeras — una heurística de triangulación podría interpretar esto como «probablemente no está en/cerca de Rusia». Es una señal de baja confianza, no una detección firme."
+          }
+        },
+        "dnsLeak": {
+          "title": "Fugas de DNS / WebRTC / IPv6",
+          "detail": "No automatizado aquí — las fugas de DNS/WebRTC/IPv6 requieren un contexto real de navegador (WebRTC, en particular, no se puede probar desde Dart). Compruébalo manualmente con browserleaks.com o ipleak.net mientras estés conectado, sobre todo después de cambiar reglas de enrutamiento."
+        },
+        "transportVpn": {
+          "title": "Señal del sistema de VPN",
+          "detail": "Cualquier app puede ver que hay una VPN activa en este dispositivo a través de la API oficial ConnectivityManager/NEVPNManager (TRANSPORT_VPN) — es el comportamiento esperado del sistema operativo y no se puede ocultar sin root/jailbreak. Solo revela que «hay una VPN activa», nunca cuál ni la IP del servidor, así que aquí no se trata como un hallazgo."
+        }
+      },
+      "limitationNotice": "Esto solo comprueba lo que es visible para una app normal sin root, el mismo modelo de amenaza que un proceso en segundo plano de una app bancaria o de un marketplace. No emula comprobaciones más profundas a nivel root/Shizuku, ya que no forman parte de ese modelo de amenaza."
+    },
     "settings": {
       "title": "Ajustes",
       "resetTunnel": "Restablecer perfil de VPN",
@@ -316,6 +404,11 @@
             "update": "Actualizar valor",
             "clearList": "Limpiar lista",
             "clearListMsg": "Todos los elementos han sido eliminados"
+          },
+          "windowsApps": {
+            "pageTitle": "Apps instaladas",
+            "clearSelection": "Borrar selección",
+            "noneFound": "No se encontraron apps — prueba la entrada manual de la ruta del proceso"
           }
         },
         "generalOptions": {
@@ -345,6 +438,10 @@
             "prefer": "Preferido",
             "only": "Exclusivo"
           },
+          "splitTunnelingDesktop": {
+            "title": "Túnel dividido",
+            "subtitle": "Enruta apps específicas fuera del túnel mediante reglas basadas en procesos"
+          },
           "perAppProxy": {
             "title": "Proxy por aplicación",
             "hideSysApps": "Ocultar aplicaciones del sistema",
@@ -359,6 +456,7 @@
                 "file": "Exportar selección a un archivo"
               },
               "shareToAll": "Compartir con todos",
+              "loadRuTemplate": "Cargar plantilla de apps rusas",
               "clearAllSelections": "Borrar todas las selecciones"
             },
             "modes": {
@@ -396,6 +494,13 @@
           "bypassLan": {
             "name": "Omitir LAN",
             "description": ""
+          }
+        },
+        "predefinedApps": {
+          "title": "Paquetes de apps",
+          "ruApps": {
+            "name": "Apps rusas (omitir)",
+            "description": "Añade las principales apps bancarias, de comercio electrónico y sociales/mensajería rusas a la lista de omisión, para que usen tu IP local real en lugar de la VPN"
           }
         }
       },

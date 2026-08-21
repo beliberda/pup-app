@@ -5,16 +5,17 @@ import 'package:hiddify/core/db/db.steps.dart';
 import 'package:hiddify/core/directories/directories_provider.dart';
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
+import 'package:hiddify/features/selfcheck/model/selfcheck_models.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
 
 part 'db.g.dart';
 
-@DriftDatabase(tables: [ProfileEntries, AppProxyEntries])
+@DriftDatabase(tables: [ProfileEntries, AppProxyEntries, SelfCheckResultEntries])
 class Db extends _$Db with InfraLogger {
   Db([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(
@@ -65,6 +66,9 @@ class Db extends _$Db with InfraLogger {
         from5To6: (m, schema) async {
           await m.dropColumn(schema.profileEntries, 'profile_override');
         },
+        from6To7: (m, schema) async {
+          await m.createTable(schema.selfCheckResultEntries);
+        },
       ),
     );
   }
@@ -105,4 +109,15 @@ class AppProxyEntries extends Table {
 
   @override
   Set<Column> get primaryKey => {mode, pkgName};
+}
+
+@DataClassName('SelfCheckResultEntry')
+class SelfCheckResultEntries extends Table {
+  TextColumn get profileId => text()();
+  TextColumn get itemsJson => text()();
+  TextColumn get verdict => textEnum<CheckStatus>()();
+  DateTimeColumn get generatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {profileId};
 }

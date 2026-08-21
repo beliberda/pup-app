@@ -210,13 +210,70 @@
         "error": "Check failed"
       },
       "items": {
-        "localPorts": "Local ports (BypassChecker-style scan)",
-        "interfaceName": "Network interface name",
-        "ipReputation": "Exit IP reputation",
-        "cdnColo": "CDN edge location",
-        "rtt": "RTT triangulation",
-        "dnsLeak": "DNS / WebRTC / IPv6 leaks",
-        "transportVpn": "System VPN signal"
+        "localPorts": {
+          "title": "Local ports (BypassChecker-style scan)",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}: enabled in settings (port ${port}) — this opens a local API reachable by any app with plain INTERNET permission on 127.0.0.1.",
+            "openUnexpected": "${label}: port ${port} is OPEN even though it's disabled in settings — unexpected.",
+            "closedAsExpected": "${label}: closed, as expected.",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound: always on (port ${port}, randomized per install), no auth token — this is the engine's only unconditional local inbound, and by design of the TUN mode it can't be disabled from this client."
+          }
+        },
+        "interfaceName": {
+          "title": "Network interface name",
+          "detail": {
+            "notConnected": "VPN is not connected — connect the tunnel to check the active interface name.",
+            "error": "Could not list network interfaces: ${error}",
+            "good": "Active interfaces: ${names}. None match default VPN naming patterns.",
+            "warning": "Active interfaces: ${names}. Default-looking names: ${suspicious} — naive detectors regex-match tun/tap/wg/utun/ppp interface names. A rename is already written in the engine source but is inactive until the native engine is rebuilt from source."
+          }
+        },
+        "ipReputation": {
+          "title": "Exit IP reputation",
+          "flags": {
+            "datacenter": "datacenter",
+            "vpn": "vpn",
+            "proxy": "proxy",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN is not connected — connect the tunnel to check the exit IP reputation.",
+            "error": "Could not reach ${endpoint} through the tunnel: ${error}",
+            "good": "Exit IP ${label} is not flagged by ipapi.is as datacenter/VPN/proxy/Tor.",
+            "bad": "Exit IP ${label} is flagged: ${flags}. This is the main real-world detection vector (GeoIP-based checks used by banks/marketplaces) — it's fixed by choosing a server IP with a clean reputation, not by any setting in this client."
+          }
+        },
+        "cdnColo": {
+          "title": "CDN edge location",
+          "detail": {
+            "notConnected": "VPN is not connected — connect the tunnel to check the CDN edge location.",
+            "error": "Could not reach ${endpoint} through the tunnel: ${error}",
+            "info": "Cloudflare sees this connection arriving via edge \"${colo}\" (its guess at your country: ${loc}). Informational only — compare it yourself against where your server actually is."
+          }
+        },
+        "rtt": {
+          "title": "RTT triangulation",
+          "detail": {
+            "notConnected": "VPN is not connected — connect the tunnel to measure RTT triangulation.",
+            "notEnoughData": "Not enough successful measurements to compare RTT (some reference hosts unreachable).",
+            "good": "Avg RTT to RU reference hosts: ${avgRu}ms, to foreign reference hosts: ${avgForeign}ms. Exit point looks geographically closer to RU than to the foreign references.",
+            "warning": "Avg RTT to RU reference hosts: ${avgRu}ms, to foreign reference hosts: ${avgForeign}ms. Exit point looks farther from RU than from the foreign references — a triangulation heuristic could read this as \"probably not in/near Russia\". This is a low-confidence signal, not a hard detection."
+          }
+        },
+        "dnsLeak": {
+          "title": "DNS / WebRTC / IPv6 leaks",
+          "detail": "Not automated here — DNS/WebRTC/IPv6 leaks need a real browser context (WebRTC in particular can't be probed from Dart). Check manually with browserleaks.com or ipleak.net while connected, especially after changing routing rules."
+        },
+        "transportVpn": {
+          "title": "System VPN signal",
+          "detail": "Any app can see that some VPN is active on this device via the official ConnectivityManager/NEVPNManager API (TRANSPORT_VPN) — this is expected OS behavior and can't be hidden without root/jailbreak. It reveals only \"a VPN is on\", never which one or the server IP, so it is not treated as a finding here."
+        }
       },
       "limitationNotice": "This only checks what's visible to an ordinary app without root — the same threat model as a background process in a banking or marketplace app. It doesn't emulate deeper root/Shizuku-level checks, since those aren't part of that threat model."
     },
@@ -349,6 +406,11 @@
             "update": "Update value",
             "clearList": "Clear list",
             "clearListMsg": "All items are deleted"
+          },
+          "windowsApps": {
+            "pageTitle": "Installed apps",
+            "clearSelection": "Clear selection",
+            "noneFound": "No apps found — try the manual process path entry instead"
           }
         },
         "generalOptions": {
@@ -378,6 +440,10 @@
             "prefer": "Preferred",
             "only": "Exclusive"
           },
+          "splitTunnelingDesktop": {
+            "title": "Split tunneling",
+            "subtitle": "Route specific apps outside the tunnel using process-based rules"
+          },
           "perAppProxy": {
             "title": "Per-app proxy",
             "hideSysApps": "Hide system apps",
@@ -392,6 +458,7 @@
                 "file": "Export selection to file"
               },
               "shareToAll": "Share to all",
+              "loadRuTemplate": "Load RU apps template",
               "clearAllSelections": "Clear all selections"
             },
             "modes": {
@@ -433,6 +500,13 @@
           "ruServices": {
             "name": "RU banks & marketplaces (direct)",
             "description": "Manual domain list for RU banks/marketplaces, in case they're served from non-RU CDN IPs not covered by geoip-ru"
+          }
+        },
+        "predefinedApps": {
+          "title": "App bundles",
+          "ruApps": {
+            "name": "Russian apps (bypass)",
+            "description": "Adds major RU banking, marketplace, and social/messaging apps to the bypass list, so they use your real local IP instead of the VPN"
           }
         }
       },

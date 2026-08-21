@@ -189,6 +189,94 @@
       "termsAndConditions": "Syarat dan Ketentuan",
       "privacyPolicy": "Kebijakan Privasi"
     },
+    "selfCheck": {
+      "title": "Pemeriksaan visibilitas VPN",
+      "subtitle": "Menjalankan jenis pemeriksaan yang sama seperti yang bisa digunakan aplikasi latar belakang tanpa root untuk mendeteksi VPN ini — pada server dan pengaturan Anda saat ini, sekarang juga.",
+      "run": "Jalankan pemeriksaan",
+      "rerun": "Jalankan lagi",
+      "running": "Menjalankan pemeriksaan…",
+      "notRunYet": "Belum dijalankan pada sesi ini — ketuk \"Jalankan pemeriksaan\" di bawah.",
+      "verdict": {
+        "good": "Terlihat seperti lalu lintas biasa",
+        "warning": "Ada beberapa hal yang perlu diperhatikan",
+        "bad": "Kemungkinan besar terdeteksi",
+        "info": "Jalankan pemeriksaan untuk melihat hasilnya"
+      },
+      "status": {
+        "good": "OK",
+        "warning": "Peringatan",
+        "bad": "Terdeteksi",
+        "info": "Info",
+        "error": "Pemeriksaan gagal"
+      },
+      "items": {
+        "localPorts": {
+          "title": "Port lokal (pemindaian gaya BypassChecker)",
+          "labels": {
+            "clashApi": "Clash API",
+            "tproxyInbound": "TProxy inbound",
+            "redirectInbound": "Redirect inbound",
+            "directInbound": "Direct inbound"
+          },
+          "detail": {
+            "enabledInSettings": "${label}: diaktifkan di pengaturan (port ${port}) — ini membuka API lokal yang bisa diakses aplikasi mana pun dengan izin INTERNET biasa di 127.0.0.1.",
+            "openUnexpected": "${label}: port ${port} TERBUKA meskipun dinonaktifkan di pengaturan — tidak terduga.",
+            "closedAsExpected": "${label}: tertutup, sesuai harapan.",
+            "mixedInbound": "Mixed SOCKS/HTTP inbound: selalu aktif (port ${port}, acak setiap instalasi), tanpa token autentikasi — ini satu-satunya inbound lokal tanpa syarat milik engine, dan karena desain mode TUN, tidak bisa dinonaktifkan dari klien ini."
+          }
+        },
+        "interfaceName": {
+          "title": "Nama antarmuka jaringan",
+          "detail": {
+            "notConnected": "VPN belum terhubung — sambungkan tunnel untuk memeriksa nama antarmuka yang aktif.",
+            "error": "Tidak dapat membuat daftar antarmuka jaringan: ${error}",
+            "good": "Antarmuka aktif: ${names}. Tidak ada yang cocok dengan pola penamaan VPN default.",
+            "warning": "Antarmuka aktif: ${names}. Nama yang tampak default: ${suspicious} — detektor sederhana mencocokkan nama antarmuka seperti tun/tap/wg/utun/ppp dengan regex. Penggantian nama sudah ditulis di kode sumber engine, tetapi tidak aktif sampai engine native dibangun ulang dari sumbernya."
+          }
+        },
+        "ipReputation": {
+          "title": "Reputasi IP keluar",
+          "flags": {
+            "datacenter": "datacenter",
+            "vpn": "vpn",
+            "proxy": "proxy",
+            "tor": "tor"
+          },
+          "detail": {
+            "notConnected": "VPN belum terhubung — sambungkan tunnel untuk memeriksa reputasi IP keluar.",
+            "error": "Tidak dapat menjangkau ${endpoint} melalui tunnel: ${error}",
+            "good": "IP keluar ${label} tidak ditandai oleh ipapi.is sebagai datacenter/VPN/proxy/Tor.",
+            "bad": "IP keluar ${label} ditandai: ${flags}. Ini adalah vektor deteksi utama di dunia nyata (pemeriksaan berbasis GeoIP yang digunakan bank/marketplace) — diperbaiki dengan memilih IP server yang reputasinya bersih, bukan lewat pengaturan di klien ini."
+          }
+        },
+        "cdnColo": {
+          "title": "Lokasi edge CDN",
+          "detail": {
+            "notConnected": "VPN belum terhubung — sambungkan tunnel untuk memeriksa lokasi edge CDN.",
+            "error": "Tidak dapat menjangkau ${endpoint} melalui tunnel: ${error}",
+            "info": "Cloudflare melihat koneksi ini masuk lewat edge \"${colo}\" (perkiraan negaranya: ${loc}). Hanya informatif — bandingkan sendiri dengan lokasi sebenarnya dari server Anda."
+          }
+        },
+        "rtt": {
+          "title": "Triangulasi RTT",
+          "detail": {
+            "notConnected": "VPN belum terhubung — sambungkan tunnel untuk mengukur triangulasi RTT.",
+            "notEnoughData": "Pengukuran berhasil tidak cukup untuk membandingkan RTT (beberapa host referensi tidak terjangkau).",
+            "good": "RTT rata-rata ke host referensi RU: ${avgRu}ms, ke host referensi asing: ${avgForeign}ms. Titik keluar tampak secara geografis lebih dekat ke RU dibanding ke referensi asing.",
+            "warning": "RTT rata-rata ke host referensi RU: ${avgRu}ms, ke host referensi asing: ${avgForeign}ms. Titik keluar tampak lebih jauh dari RU dibanding dari referensi asing — heuristik triangulasi bisa membacanya sebagai \"kemungkinan bukan di/dekat Rusia\". Ini sinyal berkeyakinan rendah, bukan deteksi pasti."
+          }
+        },
+        "dnsLeak": {
+          "title": "Kebocoran DNS / WebRTC / IPv6",
+          "detail": "Tidak diotomatisasi di sini — kebocoran DNS/WebRTC/IPv6 memerlukan konteks browser sungguhan (WebRTC khususnya tidak bisa diperiksa dari Dart). Periksa manual dengan browserleaks.com atau ipleak.net saat terhubung, terutama setelah mengubah aturan routing."
+        },
+        "transportVpn": {
+          "title": "Sinyal VPN sistem",
+          "detail": "Aplikasi mana pun bisa melihat bahwa ada VPN aktif di perangkat ini lewat API resmi ConnectivityManager/NEVPNManager (TRANSPORT_VPN) — ini perilaku OS yang memang diharapkan dan tidak bisa disembunyikan tanpa root/jailbreak. Ini hanya mengungkap \"ada VPN yang aktif\", tidak pernah VPN yang mana atau IP server-nya, jadi ini tidak dianggap sebagai temuan di sini."
+        }
+      },
+      "limitationNotice": "Ini hanya memeriksa apa yang terlihat oleh aplikasi biasa tanpa root — model ancaman yang sama dengan proses latar belakang pada aplikasi perbankan atau marketplace. Ini tidak mensimulasikan pemeriksaan tingkat root/Shizuku yang lebih dalam, karena itu bukan bagian dari model ancaman tersebut."
+    },
     "settings": {
       "title": "Pengaturan",
       "resetTunnel": "Setel ulang profil VPN",
@@ -316,6 +404,11 @@
             "update": "Perbarui nilai",
             "clearList": "Bersihkan daftar",
             "clearListMsg": "Semua item dihapus"
+          },
+          "windowsApps": {
+            "pageTitle": "Aplikasi terpasang",
+            "clearSelection": "Hapus pilihan",
+            "noneFound": "Tidak ada aplikasi ditemukan — coba masukkan jalur proses secara manual"
           }
         },
         "generalOptions": {
@@ -345,6 +438,10 @@
             "prefer": "Prioritaskan",
             "only": "Eksklusif"
           },
+          "splitTunnelingDesktop": {
+            "title": "Split tunneling",
+            "subtitle": "Mengarahkan aplikasi tertentu di luar tunnel menggunakan aturan berbasis proses"
+          },
           "perAppProxy": {
             "title": "Proxy per aplikasi",
             "hideSysApps": "Sembunyikan aplikasi sistem",
@@ -359,6 +456,7 @@
                 "file": "Ekspor pilihan ke file"
               },
               "shareToAll": "Bagikan ke semua",
+              "loadRuTemplate": "Muat template aplikasi RU",
               "clearAllSelections": "Hapus semua pilihan"
             },
             "modes": {
@@ -396,6 +494,13 @@
           "bypassLan": {
             "name": "Lewati LAN",
             "description": ""
+          }
+        },
+        "predefinedApps": {
+          "title": "Paket aplikasi",
+          "ruApps": {
+            "name": "Aplikasi Rusia (lewati)",
+            "description": "Menambahkan aplikasi perbankan, marketplace, dan sosial/pesan utama Rusia ke daftar lewati, sehingga menggunakan IP lokal asli Anda, bukan VPN"
           }
         }
       },

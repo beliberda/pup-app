@@ -6,6 +6,14 @@ class SelfCheckItem {
   final String id;
   final CheckStatus status;
   final String detail;
+
+  Map<String, dynamic> toJson() => {'id': id, 'status': status.name, 'detail': detail};
+
+  factory SelfCheckItem.fromJson(Map<String, dynamic> json) => SelfCheckItem(
+    id: json['id'] as String,
+    status: CheckStatus.values.byName(json['status'] as String),
+    detail: json['detail'] as String,
+  );
 }
 
 class SelfCheckReport {
@@ -22,4 +30,11 @@ class SelfCheckReport {
     if (relevant.isEmpty) return CheckStatus.info;
     return CheckStatus.good;
   }
+
+  List<Map<String, dynamic>> itemsToJson() => items.map((e) => e.toJson()).toList();
+
+  factory SelfCheckReport.fromItemsJson(List<dynamic> itemsJson, DateTime generatedAt) => SelfCheckReport(
+    items: itemsJson.map((e) => SelfCheckItem.fromJson(e as Map<String, dynamic>)).toList(),
+    generatedAt: generatedAt,
+  );
 }

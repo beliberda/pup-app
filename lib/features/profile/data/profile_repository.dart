@@ -12,6 +12,7 @@ import 'package:hiddify/features/profile/data/profile_path_resolver.dart';
 import 'package:hiddify/features/profile/model/profile_entity.dart';
 import 'package:hiddify/features/profile/model/profile_failure.dart';
 import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
+import 'package:hiddify/features/selfcheck/data/selfcheck_result_data_source.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/hiddifycore/hiddify_core_service.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
@@ -43,17 +44,20 @@ class ProfileRepositoryImpl with ExceptionHandler, InfraLogger implements Profil
     required HiddifyCoreService singbox,
     required ConfigOptionRepository configOptionRepository,
     required ProfileParser profileParser,
+    required SelfCheckResultDataSource selfCheckResultDataSource,
   }) : _profileParser = profileParser,
        _configOptionRepo = configOptionRepository,
        _singbox = singbox,
        _profilePathResolver = profilePathResolver,
-       _profileDataSource = profileDataSource;
+       _profileDataSource = profileDataSource,
+       _selfCheckResultDataSource = selfCheckResultDataSource;
 
   final ProfileDataSource _profileDataSource;
   final ProfilePathResolver _profilePathResolver;
   final HiddifyCoreService _singbox;
   final ConfigOptionRepository _configOptionRepo;
   final ProfileParser _profileParser;
+  final SelfCheckResultDataSource _selfCheckResultDataSource;
 
   @override
   TaskEither<ProfileFailure, Unit> init() {
@@ -89,6 +93,7 @@ class ProfileRepositoryImpl with ExceptionHandler, InfraLogger implements Profil
     return TaskEither.tryCatch(() async {
       await _profileDataSource.deleteById(id, isActive);
       await _profilePathResolver.file(id).delete();
+      await _selfCheckResultDataSource.deleteByProfileId(id);
       return unit;
     }, ProfileUnexpectedFailure.new);
   }

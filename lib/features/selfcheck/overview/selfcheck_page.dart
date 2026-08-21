@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/selfcheck/model/selfcheck_models.dart';
 import 'package:hiddify/features/selfcheck/notifier/selfcheck_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,7 +12,17 @@ class SelfCheckPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
-    final state = ref.watch(selfCheckNotifierProvider);
+    final activeProfile = ref.watch(activeProfileProvider);
+    final profileId = activeProfile.valueOrNull?.id;
+
+    if (profileId == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(t.pages.selfCheck.title)),
+        body: Center(child: Text(t.pages.selfCheck.notRunYet)),
+      );
+    }
+
+    final state = ref.watch(selfCheckNotifierProvider(profileId));
 
     return Scaffold(
       appBar: AppBar(title: Text(t.pages.selfCheck.title)),
@@ -41,7 +52,7 @@ class SelfCheckPage extends HookConsumerWidget {
           },
           const Gap(24),
           FilledButton.icon(
-            onPressed: state.isLoading ? null : () => ref.read(selfCheckNotifierProvider.notifier).run(),
+            onPressed: state.isLoading ? null : () => ref.read(selfCheckNotifierProvider(profileId).notifier).run(),
             icon: const Icon(Icons.security_rounded),
             label: Text(state.hasValue && state.value != null ? t.pages.selfCheck.rerun : t.pages.selfCheck.run),
           ),
@@ -98,13 +109,13 @@ class _CheckTile extends StatelessWidget {
   final Translations t;
 
   String get _title => switch (item.id) {
-    'localPorts' => t.pages.selfCheck.items.localPorts,
-    'interfaceName' => t.pages.selfCheck.items.interfaceName,
-    'ipReputation' => t.pages.selfCheck.items.ipReputation,
-    'cdnColo' => t.pages.selfCheck.items.cdnColo,
-    'rtt' => t.pages.selfCheck.items.rtt,
-    'dnsLeak' => t.pages.selfCheck.items.dnsLeak,
-    'transportVpn' => t.pages.selfCheck.items.transportVpn,
+    'localPorts' => t.pages.selfCheck.items.localPorts.title,
+    'interfaceName' => t.pages.selfCheck.items.interfaceName.title,
+    'ipReputation' => t.pages.selfCheck.items.ipReputation.title,
+    'cdnColo' => t.pages.selfCheck.items.cdnColo.title,
+    'rtt' => t.pages.selfCheck.items.rtt.title,
+    'dnsLeak' => t.pages.selfCheck.items.dnsLeak.title,
+    'transportVpn' => t.pages.selfCheck.items.transportVpn.title,
     _ => item.id,
   };
 
