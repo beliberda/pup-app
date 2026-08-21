@@ -42,6 +42,7 @@ const (
 	TypeAwg            = "awg"      //H
 	TypeBalancer       = "balancer" //H
 	TypeDNSTT          = "dnstt"    //H
+	TypeOlcrtc         = "olcrtc"   //H
 )
 
 const (
@@ -121,6 +122,8 @@ func ProxyDisplayName(proxyType string) string {
 		return "Awg"
 	case TypeBalancer:
 		return "Balancer"
+	case TypeOlcrtc:
+		return "olcRTC"
 	default:
 		return "Unknown"
 	}
