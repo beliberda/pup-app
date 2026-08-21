@@ -205,6 +205,13 @@ class RoutingOptionsPage extends HookConsumerWidget {
                     }
                   },
                 ),
+                if (PlatformUtils.isDesktop)
+                  ListTile(
+                    title: Text(t.pages.settings.routing.generalOptions.splitTunnelingDesktop.title),
+                    subtitle: Text(t.pages.settings.routing.generalOptions.splitTunnelingDesktop.subtitle),
+                    leading: const Icon(Icons.call_split_rounded),
+                    onTap: () => context.goNamed('rule', pathParameters: {'orderId': 'new'}),
+                  ),
                 if (PlatformUtils.isAndroid)
                   ListTile(
                     title: Text(t.pages.settings.routing.generalOptions.perAppProxy.title),

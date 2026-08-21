@@ -16,6 +16,7 @@ import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart'
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_backup.dart';
 import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/per_app_proxy/model/pkg_flag.dart';
+import 'package:hiddify/features/per_app_proxy/model/ru_apps_preset.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:installed_apps/index.dart';
@@ -93,6 +94,17 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
     loggy.info('Clearing all items');
     await ref.read(appProxyDataSourceProvider).clearAll(mode: _mode!);
     await ref.watch(Preferences.autoAppsSelectionRegion.notifier).update(null);
+  }
+
+  /// Merges the curated RU-apps bundle into the bypass (exclude) list,
+  /// switching the global mode to exclude if needed. Uses [importPkgs]'s
+  /// merge semantics, so it never wipes selections the user already made.
+  Future<void> loadRuPreset() async {
+    loggy.info('Loading RU apps preset');
+    await ref.read(Preferences.perAppProxyMode.notifier).update(PerAppProxyMode.exclude);
+    await ref
+        .read(appProxyDataSourceProvider)
+        .importPkgs(backup: PerAppProxyBackup(exclude: PerAppProxyBackupMode(selected: ruDefaultExcludePackages)));
   }
 
   Future<bool> importClipboard() async {

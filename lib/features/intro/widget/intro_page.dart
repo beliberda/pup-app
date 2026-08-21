@@ -14,6 +14,10 @@ import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/features/common/general_pref_tiles.dart';
+import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
+import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_backup.dart';
+import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/per_app_proxy/model/ru_apps_preset.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/features/settings/widget/preference_tile.dart';
 import 'package:hiddify/gen/assets.gen.dart';
@@ -184,6 +188,16 @@ class IntroPage extends HookConsumerWidget with PresLogger {
               await ref.read(analyticsControllerProvider.notifier).disableAnalytics();
             } catch (error, stackTrace) {
               loggy.error("could not disable analytics", error, stackTrace);
+            }
+          }
+          if (PlatformUtils.isAndroid) {
+            try {
+              await ref.read(Preferences.perAppProxyMode.notifier).update(PerAppProxyMode.exclude);
+              await ref
+                  .read(appProxyDataSourceProvider)
+                  .importPkgs(backup: PerAppProxyBackup(exclude: PerAppProxyBackupMode(selected: ruDefaultExcludePackages)));
+            } catch (error, stackTrace) {
+              loggy.error("could not seed default split-tunneling apps", error, stackTrace);
             }
           }
           await ref.read(Preferences.introCompleted.notifier).update(true);

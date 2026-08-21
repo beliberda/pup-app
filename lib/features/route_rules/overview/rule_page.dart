@@ -8,6 +8,7 @@ import 'package:hiddify/features/route_rules/widget/setting_divider.dart';
 import 'package:hiddify/features/route_rules/widget/setting_generic_list.dart';
 import 'package:hiddify/features/route_rules/widget/setting_radio.dart';
 import 'package:hiddify/features/route_rules/widget/setting_text.dart';
+import 'package:hiddify/features/split_tunneling/overview/windows_apps_page.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -94,10 +95,20 @@ class RulePage extends HookConsumerWidget {
             SettingGenericList<String>(
               title: RuleEnum.processPath.present(t),
               values: ref.watch(ruleNotifierProvider(ruleListOrder).select((value) => value.processPaths)),
-              onTap: () => context.pushNamed(
-                'genericList',
-                pathParameters: {'orderId': ruleListOrder?.toString() ?? 'new', 'ruleEnum': RuleEnum.processPath.name},
-              ),
+              onTap: PlatformUtils.isWindows
+                  ? () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => WindowsAppsPage(ruleListOrder: ruleListOrder),
+                        fullscreenDialog: true,
+                      ),
+                    )
+                  : () => context.pushNamed(
+                      'genericList',
+                      pathParameters: {
+                        'orderId': ruleListOrder?.toString() ?? 'new',
+                        'ruleEnum': RuleEnum.processPath.name,
+                      },
+                    ),
               showPlatformWarning: !PlatformUtils.isDesktop,
             ),
             const SettingDivider(),

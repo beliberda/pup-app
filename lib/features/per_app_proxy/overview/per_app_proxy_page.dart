@@ -205,6 +205,10 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                             .read(appProxyLoadingProvider.notifier)
                             .doAsync(ref.read(PerAppProxyProvider(mode).notifier).shareOnGithub),
                       ),
+                    MenuItemButton(
+                      child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.loadRuTemplate),
+                      onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showPredefinedApps(),
+                    ),
                     const PopupMenuDivider(),
                     MenuItemButton(
                       child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.clearAllSelections),
