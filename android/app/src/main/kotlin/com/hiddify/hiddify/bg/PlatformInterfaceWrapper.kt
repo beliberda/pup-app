@@ -161,17 +161,27 @@ interface PlatformInterfaceWrapper : PlatformInterface {
     }
 
     override fun readWIFIState(): WIFIState? {
-        @Suppress("DEPRECATION")
-        val wifiInfo =
-            Application.wifiManager.connectionInfo ?: return null
-        var ssid = wifiInfo.ssid
-        if (ssid == "<unknown ssid>") {
-            return WIFIState("", "")
+        // We don't declare ACCESS_WIFI_STATE (avoid the extra permission for a
+        // feature nothing in the UI exposes), so WifiManager.getConnectionInfo()
+        // always throws SecurityException here. This is called from native code
+        // across the JNI boundary — letting that exception cross back uncaught
+        // trips CheckJNI's "called with pending exception" abort and kills the
+        // whole process, so it must never escape this function.
+        return try {
+            @Suppress("DEPRECATION")
+            val wifiInfo = Application.wifiManager.connectionInfo ?: return null
+            var ssid = wifiInfo.ssid
+            if (ssid == "<unknown ssid>") {
+                return WIFIState("", "")
+            }
+            if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
+                ssid = ssid.substring(1, ssid.length - 1)
+            }
+            WIFIState(ssid, wifiInfo.bssid)
+        } catch (e: Exception) {
+            Log.e("PlatformInterface", "readWIFIState", e)
+            null
         }
-        if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
-            ssid = ssid.substring(1, ssid.length - 1)
-        }
-        return WIFIState(ssid, wifiInfo.bssid)
     }
 
     override fun localDNSTransport(): LocalDNSTransport? = LocalResolver
