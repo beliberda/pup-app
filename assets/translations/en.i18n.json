@@ -231,7 +231,18 @@
             "notConnected": "VPN is not connected — connect the tunnel to check the active interface name.",
             "error": "Could not list network interfaces: ${error}",
             "good": "Active interfaces: ${names}. None match default VPN naming patterns.",
-            "warning": "Active interfaces: ${names}. Default-looking names: ${suspicious} — naive detectors regex-match tun/tap/wg/utun/ppp interface names. A rename is already written in the engine source but is inactive until the native engine is rebuilt from source."
+            "warning": "Active interfaces: ${names}. Default-looking names: ${suspicious} — naive detectors regex-match tun/tap/wg/utun/ppp interface names. On this platform the engine already randomizes the interface name per connection; this means the binary you're running predates that fix and needs to be rebuilt from source.",
+            "androidNote": "Active interfaces: ${names}. Default-looking names: ${suspicious} — naive detectors regex-match tun/tap/wg/utun/ppp interface names. On Android this name is assigned by the OS itself (VpnService creates tun0/tun1/…); there's no public API to rename it without root. Same category as the system VPN signal below: visible, but not something this client can fix."
+          }
+        },
+        "profileSecurity": {
+          "title": "Server profile TLS hardening",
+          "detail": {
+            "unavailable": "Could not read or parse the active profile's config — skipped.",
+            "notApplicable": "No TLS-based outbounds (VLESS/Trojan/VMess) in this profile — protocols like Shadowsocks/Hysteria2/TUIC/WireGuard have their own encryption and aren't covered by this check.",
+            "good": "Every TLS-based outbound in this profile uses REALITY or a real browser TLS fingerprint (uTLS) — resistant to active-probing TLS fingerprinting.",
+            "noTls": "${server} (${protocol}): TLS is disabled — the handshake is easy to fingerprint and block outright.",
+            "noUtls": "${server} (${protocol}): TLS is on but without REALITY or a uTLS fingerprint — uses Go's default TLS ClientHello, which has a distinctive JA3/JA4 signature unlike a real browser's."
           }
         },
         "ipReputation": {

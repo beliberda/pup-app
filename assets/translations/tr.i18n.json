@@ -231,7 +231,18 @@
             "notConnected": "VPN bağlı değil — etkin arayüz adını kontrol etmek için tüneli bağlayın.",
             "error": "Ağ arayüzleri listelenemedi: ${error}",
             "good": "Etkin arayüzler: ${names}. Hiçbiri varsayılan VPN adlandırma kalıplarıyla eşleşmiyor.",
-            "warning": "Etkin arayüzler: ${names}. Varsayılana benzeyen adlar: ${suspicious} — basit dedektörler tun/tap/wg/utun/ppp gibi arayüz adlarını regex ile eşleştirir. Yeniden adlandırma motor kaynak kodunda zaten yazılmış durumda, ancak yerel motor kaynaktan yeniden derlenene kadar etkin değil."
+            "warning": "Etkin arayüzler: ${names}. Varsayılana benzeyen adlar: ${suspicious} — basit dedektörler tun/tap/wg/utun/ppp gibi arayüz adlarını regex ile eşleştirir. Bu platformda motor her bağlantıda arayüz adını zaten rastgeleleştiriyor; bu, kullandığınız ikili dosyanın bu düzeltmeden önceki bir sürüm olduğu ve kaynaktan yeniden derlenmesi gerektiği anlamına gelir.",
+            "androidNote": "Etkin arayüzler: ${names}. Varsayılana benzeyen adlar: ${suspicious} — basit dedektörler tun/tap/wg/utun/ppp gibi arayüz adlarını regex ile eşleştirir. Android'de bu adı işletim sisteminin kendisi atar (VpnService tun0/tun1/… oluşturur); root olmadan yeniden adlandırmak için herkese açık bir API yoktur. Aşağıdaki sistem VPN sinyaliyle aynı kategoridedir: görünür, ama bu istemcinin düzeltebileceği bir şey değildir."
+          }
+        },
+        "profileSecurity": {
+          "title": "Sunucu profili TLS sertleştirmesi",
+          "detail": {
+            "unavailable": "Etkin profilin yapılandırması okunamadı veya ayrıştırılamadı — kontrol atlandı.",
+            "notApplicable": "Bu profilde TLS tabanlı bir çıkış (VLESS/Trojan/VMess) yok — Shadowsocks/Hysteria2/TUIC/WireGuard gibi protokollerin kendi şifrelemesi vardır ve bu kontrol onları kapsamaz.",
+            "good": "Bu profildeki tüm TLS tabanlı çıkışlar REALITY veya gerçek bir tarayıcı TLS parmak izi (uTLS) kullanıyor — aktif TLS parmak izi çıkarmaya karşı dirençli.",
+            "noTls": "${server} (${protocol}): TLS kapalı — el sıkışma kolayca parmak izi çıkarılıp doğrudan engellenebilir.",
+            "noUtls": "${server} (${protocol}): TLS açık ama REALITY veya uTLS parmak izi yok — Go'nun varsayılan TLS ClientHello'sunu kullanıyor, bu da gerçek bir tarayıcıdan farklı, belirgin bir JA3/JA4 imzasına sahip."
           }
         },
         "ipReputation": {

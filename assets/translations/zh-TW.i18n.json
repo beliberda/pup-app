@@ -231,7 +231,18 @@
             "notConnected": "VPN 尚未連線——請先連線通道以檢查目前作用中介面的名稱。",
             "error": "無法列出網路介面：${error}",
             "good": "作用中介面：${names}。沒有任何一個符合預設的 VPN 命名模式。",
-            "warning": "作用中介面：${names}。外觀類似預設值的名稱：${suspicious} —— 簡易偵測器會用正規表示式比對 tun/tap/wg/utun/ppp 這類介面名稱。重新命名的邏輯已寫入引擎原始碼，但要等原生引擎從原始碼重新建置後才會生效。"
+            "warning": "作用中介面：${names}。外觀類似預設值的名稱：${suspicious} —— 簡易偵測器會用正規表示式比對 tun/tap/wg/utun/ppp 這類介面名稱。在此平台上，引擎已經會在每次連線時隨機產生介面名稱——這代表你執行的執行檔版本早於這項修正，需要從原始碼重新建置。",
+            "androidNote": "作用中介面：${names}。外觀類似預設值的名稱：${suspicious} —— 簡易偵測器會用正規表示式比對 tun/tap/wg/utun/ppp 這類介面名稱。在 Android 上，這個名稱由作業系統自行指派（VpnService 會建立 tun0/tun1/…）；沒有公開 API 可以在不 root 的情況下重新命名。這與下方的系統 VPN 訊號屬於同一類：看得到，但不是這個用戶端能修正的問題。"
+          }
+        },
+        "profileSecurity": {
+          "title": "伺服器設定檔 TLS 強化",
+          "detail": {
+            "unavailable": "無法讀取或解析目前設定檔的內容——已略過此項檢查。",
+            "notApplicable": "此設定檔中沒有以 TLS 為基礎的出站（VLESS/Trojan/VMess）——Shadowsocks/Hysteria2/TUIC/WireGuard 等協定有自己的加密方式，不在此檢查範圍內。",
+            "good": "此設定檔中所有以 TLS 為基礎的出站都使用了 REALITY 或真實瀏覽器的 TLS 指紋（uTLS）——能抵禦主動式 TLS 指紋識別。",
+            "noTls": "${server}（${protocol}）：未啟用 TLS——交握過程很容易被識別並直接封鎖。",
+            "noUtls": "${server}（${protocol}）：已啟用 TLS，但未使用 REALITY 或 uTLS 指紋——使用的是 Go 預設的 TLS ClientHello，其 JA3/JA4 特徵與真實瀏覽器明顯不同。"
           }
         },
         "ipReputation": {

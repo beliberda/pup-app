@@ -6,10 +6,12 @@ import 'package:hiddify/core/http_client/dio_http_client.dart';
 import 'package:hiddify/core/http_client/http_client_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
+import 'package:hiddify/features/profile/data/profile_data_providers.dart';
 import 'package:hiddify/features/selfcheck/data/selfcheck_data_providers.dart';
 import 'package:hiddify/features/selfcheck/model/selfcheck_models.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
+import 'package:hiddify/utils/platform_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'selfcheck_notifier.g.dart';
@@ -53,6 +55,7 @@ class SelfCheckNotifier extends _$SelfCheckNotifier with AppLogger {
     final results = <SelfCheckItem>[
       await _checkLocalPorts(client, t),
       await _checkInterfaceName(signatures, serviceRunning, t),
+      await _checkProfileSecurity(t),
       if (serviceRunning) ...[
         await _checkIpReputation(client, signatures, t),
         await _checkCdnColo(client, signatures, t),
@@ -142,10 +145,93 @@ class SelfCheckNotifier extends _$SelfCheckNotifier with AppLogger {
     if (suspicious.isEmpty) {
       return SelfCheckItem(id: 'interfaceName', status: CheckStatus.good, detail: detail.good(names: names.join(', ')));
     }
+    if (PlatformUtils.isAndroid) {
+      // Unlike desktop, Android assigns tun0/tun1/... itself (VpnService.Builder
+      // gives the app no naming control) — this is an OS constraint, not something
+      // this client can fix, same category as the transportVpn signal below.
+      return SelfCheckItem(
+        id: 'interfaceName',
+        status: CheckStatus.info,
+        detail: detail.androidNote(names: names.join(', '), suspicious: suspicious.join(', ')),
+      );
+    }
     return SelfCheckItem(
       id: 'interfaceName',
       status: CheckStatus.warning,
       detail: detail.warning(names: names.join(', '), suspicious: suspicious.join(', ')),
+    );
+  }
+
+  /// Inspects the active profile's own generated config for TLS-based
+  /// outbounds (vless/trojan/vmess) that either skip TLS entirely or use it
+  /// without uTLS/REALITY — a plain Go TLS ClientHello has a distinctive
+  /// JA3/JA4 fingerprint unlike real browsers, unlike REALITY (which is
+  /// specifically designed to be indistinguishable from real TLS to an
+  /// active prober). Protocols with their own built-in crypto (shadowsocks,
+  /// hysteria2, tuic, wireguard) are skipped — TLS absence isn't a weakness
+  /// there.
+  Future<SelfCheckItem> _checkProfileSecurity(Translations t) async {
+    final detail = t.pages.selfCheck.items.profileSecurity.detail;
+    final repo = await ref.read(profileRepositoryProvider.future);
+    final rawConfig = await repo.getRawConfig(profileId).run().then((e) => e.getOrElse((_) => ''));
+
+    Map<String, dynamic>? config;
+    try {
+      config = rawConfig.isEmpty ? null : jsonDecode(rawConfig) as Map<String, dynamic>;
+    } catch (_) {
+      config = null;
+    }
+    final outbounds = config?['outbounds'];
+    if (outbounds is! List) {
+      return SelfCheckItem(id: 'profileSecurity', status: CheckStatus.info, detail: detail.unavailable);
+    }
+
+    const tlsBasedProtocols = {'vless', 'trojan', 'vmess'};
+    const groupOrHelperTypes = {'selector', 'urltest', 'dns', 'block'};
+    const groupOrHelperTags = {'direct', 'bypass', 'direct-fragment'};
+
+    var checkedAny = false;
+    var worstSeverity = 0;
+    final findings = <String>[];
+
+    for (final entry in outbounds) {
+      if (entry is! Map<String, dynamic>) continue;
+      final type = entry['type'] as String?;
+      final tag = entry['tag'] as String?;
+      if (type == null || groupOrHelperTypes.contains(type) || groupOrHelperTags.contains(tag)) continue;
+      if (!tlsBasedProtocols.contains(type)) continue;
+      checkedAny = true;
+
+      final label = (tag != null && tag.isNotEmpty) ? tag : (entry['server']?.toString() ?? type);
+      final tls = entry['tls'];
+      if (tls is! Map || tls['enabled'] != true) {
+        findings.add(detail.noTls(server: label, protocol: type));
+        worstSeverity = 2;
+        continue;
+      }
+
+      final reality = tls['reality'];
+      if (reality is Map && reality['enabled'] == true) continue;
+
+      final utls = tls['utls'];
+      final fingerprint = utls is Map ? utls['fingerprint']?.toString() ?? '' : '';
+      final utlsOn = utls is Map && utls['enabled'] == true && fingerprint.isNotEmpty;
+      if (!utlsOn) {
+        findings.add(detail.noUtls(server: label, protocol: type));
+        worstSeverity = worstSeverity < 1 ? 1 : worstSeverity;
+      }
+    }
+
+    if (!checkedAny) {
+      return SelfCheckItem(id: 'profileSecurity', status: CheckStatus.info, detail: detail.notApplicable);
+    }
+    if (findings.isEmpty) {
+      return SelfCheckItem(id: 'profileSecurity', status: CheckStatus.good, detail: detail.good);
+    }
+    return SelfCheckItem(
+      id: 'profileSecurity',
+      status: worstSeverity == 2 ? CheckStatus.bad : CheckStatus.warning,
+      detail: findings.join('\n'),
     );
   }
 

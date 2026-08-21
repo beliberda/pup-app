@@ -111,6 +111,7 @@ class _CheckTile extends StatelessWidget {
   String get _title => switch (item.id) {
     'localPorts' => t.pages.selfCheck.items.localPorts.title,
     'interfaceName' => t.pages.selfCheck.items.interfaceName.title,
+    'profileSecurity' => t.pages.selfCheck.items.profileSecurity.title,
     'ipReputation' => t.pages.selfCheck.items.ipReputation.title,
     'cdnColo' => t.pages.selfCheck.items.cdnColo.title,
     'rtt' => t.pages.selfCheck.items.rtt.title,

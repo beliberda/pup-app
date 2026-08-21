@@ -231,7 +231,18 @@
             "notConnected": "VPN no conectada — conecta el túnel para comprobar el nombre de la interfaz activa.",
             "error": "No se pudo obtener la lista de interfaces de red: ${error}",
             "good": "Interfaces activas: ${names}. Ninguna coincide con los patrones de nombre típicos de VPN.",
-            "warning": "Interfaces activas: ${names}. Nombres con aspecto predeterminado: ${suspicious} — los detectores simples buscan por regex nombres de interfaz como tun/tap/wg/utun/ppp. El cambio de nombre ya está implementado en el código del motor, pero está inactivo hasta que el motor nativo se recompile desde el código fuente."
+            "warning": "Interfaces activas: ${names}. Nombres con aspecto predeterminado: ${suspicious} — los detectores simples buscan por regex nombres de interfaz como tun/tap/wg/utun/ppp. En esta plataforma el motor ya aleatoriza el nombre de la interfaz en cada conexión; esto significa que el binario que estás usando es anterior a esa corrección y hay que recompilarlo desde el código fuente.",
+            "androidNote": "Interfaces activas: ${names}. Nombres con aspecto predeterminado: ${suspicious} — los detectores simples buscan por regex nombres de interfaz como tun/tap/wg/utun/ppp. En Android, este nombre lo asigna el propio sistema operativo (VpnService crea tun0/tun1/…); no existe una API pública para renombrarlo sin root. Es la misma categoría que la señal del sistema de VPN de abajo: visible, pero algo que este cliente no puede corregir."
+          }
+        },
+        "profileSecurity": {
+          "title": "Endurecimiento TLS del perfil del servidor",
+          "detail": {
+            "unavailable": "No se pudo leer o analizar la configuración del perfil activo — comprobación omitida.",
+            "notApplicable": "Este perfil no tiene salidas basadas en TLS (VLESS/Trojan/VMess) — protocolos como Shadowsocks/Hysteria2/TUIC/WireGuard tienen su propio cifrado y no están cubiertos por esta comprobación.",
+            "good": "Todas las salidas TLS de este perfil usan REALITY o una huella TLS real de navegador (uTLS) — resistentes al fingerprinting activo de TLS.",
+            "noTls": "${server} (${protocol}): TLS está desactivado — el handshake es fácil de identificar y bloquear directamente.",
+            "noUtls": "${server} (${protocol}): TLS está activo pero sin REALITY ni huella uTLS — usa el ClientHello TLS predeterminado de Go, que tiene una firma JA3/JA4 distintiva, distinta a la de un navegador real."
           }
         },
         "ipReputation": {

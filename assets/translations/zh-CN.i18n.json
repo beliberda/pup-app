@@ -231,7 +231,18 @@
             "notConnected": "VPN 未连接——请先连接隧道以检查当前活动接口的名称。",
             "error": "无法列出网络接口：${error}",
             "good": "活动接口：${names}。没有一个匹配默认的 VPN 命名模式。",
-            "warning": "活动接口：${names}。看起来像默认命名的接口：${suspicious} —— 简单的检测手段会用正则匹配 tun/tap/wg/utun/ppp 这类接口名。重命名逻辑已经写入引擎源码，但要等原生引擎从源码重新编译后才会生效。"
+            "warning": "活动接口：${names}。看起来像默认命名的接口：${suspicious} —— 简单的检测手段会用正则匹配 tun/tap/wg/utun/ppp 这类接口名。在此平台上，引擎已经会在每次连接时随机生成接口名——这意味着你运行的二进制文件版本早于这个修复，需要从源码重新编译。",
+            "androidNote": "活动接口：${names}。看起来像默认命名的接口：${suspicious} —— 简单的检测手段会用正则匹配 tun/tap/wg/utun/ppp 这类接口名。在 Android 上，这个名称由操作系统自己分配（VpnService 会创建 tun0/tun1/…）；没有公开 API 可以在不 root 的情况下重命名它。这与下面的系统 VPN 信号属于同一类：可见，但不是此客户端能够修复的问题。"
+          }
+        },
+        "profileSecurity": {
+          "title": "服务器配置 TLS 加固",
+          "detail": {
+            "unavailable": "无法读取或解析当前配置文件的内容——跳过该检测。",
+            "notApplicable": "此配置中没有基于 TLS 的出站（VLESS/Trojan/VMess）——Shadowsocks/Hysteria2/TUIC/WireGuard 等协议有自己的加密方式，不在此检测范围内。",
+            "good": "此配置中所有基于 TLS 的出站都使用了 REALITY 或真实浏览器的 TLS 指纹（uTLS）——能抵御主动 TLS 指纹识别。",
+            "noTls": "${server}（${protocol}）：未启用 TLS——握手过程很容易被识别并直接封锁。",
+            "noUtls": "${server}（${protocol}）：已启用 TLS，但未使用 REALITY 或 uTLS 指纹——使用的是 Go 默认的 TLS ClientHello，其 JA3/JA4 特征与真实浏览器明显不同。"
           }
         },
         "ipReputation": {

@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/netip"
 	"net/url"
+	"os"
 	"strings"
 	sync "sync"
 	"time"
@@ -447,7 +448,11 @@ func setInbound(options *option.Options, hopt *HiddifyOptions) {
 			// tun/tap/wg/ppp/utun/...). Only meaningfully affects
 			// Windows/Linux/macOS — Android's VpnService controls the kernel
 			// interface name itself and typically ignores this.
-			InterfaceName: "netlink0",
+			//
+			// Randomized per connection rather than a fixed string: a constant
+			// name (the previous "netlink0") is itself a stable signature that's
+			// just as regex-able as "tun0" once it's known to belong to this app.
+			InterfaceName: randomInterfaceName(),
 			Stack:         hopt.TUNStack,
 			MTU:           hopt.MTU,
 			AutoRoute:     true,
@@ -1230,4 +1235,37 @@ func generateRandomString(length int) string {
 
 	// Trim padding characters and return the string
 	return randomString[:length]
+}
+
+// tunInterfaceNameFile persists the randomized interface name across
+// reconnects — relative to the process's working directory (already os.
+// Chdir'd into by Setup(), same convention as the "data/clash.db" cache
+// file above).
+const tunInterfaceNameFile = "data/.tun_ifname"
+
+// randomInterfaceName returns a short, alphanumeric-only TUN interface name
+// that reads like an ordinary Ethernet adapter rather than tun/tap/wg/utun/
+// ppp. Kept well under Linux's IFNAMSIZ (16 bytes including the terminator)
+// and free of characters (-, _, base64 padding) that could be rejected on
+// some platform's adapter-name validation.
+//
+// Generated once per install and cached to disk — it MUST stay stable
+// across reconnects. On Windows, sing-tun derives the WinTun adapter's GUID
+// as md5("wintun"+name) (tun_windows.go, generateGUIDByDeviceName), so a
+// name that changes every connection makes Windows create a brand-new
+// virtual adapter each time instead of reusing one. That churn (leftover
+// adapters, stale routes) caused intermittent system-wide TLS certificate
+// verification failures on Windows (found 2026-08-22, one connect/
+// reconnect cycle after switching this from a fixed to a per-connection
+// random name) — do not revert to per-connection randomization.
+func randomInterfaceName() string {
+	if data, err := os.ReadFile(tunInterfaceNameFile); err == nil {
+		if name := strings.TrimSpace(string(data)); name != "" {
+			return name
+		}
+	}
+	name := fmt.Sprintf("eth%d", rand.Intn(900000)+100000)
+	_ = os.MkdirAll("data", 0o755)
+	_ = os.WriteFile(tunInterfaceNameFile, []byte(name), 0o644)
+	return name
 }

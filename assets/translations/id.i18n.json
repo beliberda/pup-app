@@ -231,7 +231,18 @@
             "notConnected": "VPN belum terhubung — sambungkan tunnel untuk memeriksa nama antarmuka yang aktif.",
             "error": "Tidak dapat membuat daftar antarmuka jaringan: ${error}",
             "good": "Antarmuka aktif: ${names}. Tidak ada yang cocok dengan pola penamaan VPN default.",
-            "warning": "Antarmuka aktif: ${names}. Nama yang tampak default: ${suspicious} — detektor sederhana mencocokkan nama antarmuka seperti tun/tap/wg/utun/ppp dengan regex. Penggantian nama sudah ditulis di kode sumber engine, tetapi tidak aktif sampai engine native dibangun ulang dari sumbernya."
+            "warning": "Antarmuka aktif: ${names}. Nama yang tampak default: ${suspicious} — detektor sederhana mencocokkan nama antarmuka seperti tun/tap/wg/utun/ppp dengan regex. Di platform ini engine sudah mengacak nama antarmuka setiap kali terhubung; ini berarti biner yang Anda jalankan masih versi sebelum perbaikan itu dan perlu dibangun ulang dari sumbernya.",
+            "androidNote": "Antarmuka aktif: ${names}. Nama yang tampak default: ${suspicious} — detektor sederhana mencocokkan nama antarmuka seperti tun/tap/wg/utun/ppp dengan regex. Di Android, nama ini ditetapkan oleh OS itu sendiri (VpnService membuat tun0/tun1/…); tidak ada API publik untuk mengganti namanya tanpa root. Kategorinya sama dengan sinyal VPN sistem di bawah: terlihat, tapi bukan sesuatu yang bisa diperbaiki klien ini."
+          }
+        },
+        "profileSecurity": {
+          "title": "Pengerasan TLS profil server",
+          "detail": {
+            "unavailable": "Tidak dapat membaca atau mengurai konfigurasi profil aktif — pemeriksaan dilewati.",
+            "notApplicable": "Tidak ada outbound berbasis TLS (VLESS/Trojan/VMess) di profil ini — protokol seperti Shadowsocks/Hysteria2/TUIC/WireGuard punya enkripsi sendiri dan tidak dicakup pemeriksaan ini.",
+            "good": "Semua outbound berbasis TLS di profil ini menggunakan REALITY atau sidik jari TLS browser asli (uTLS) — tahan terhadap fingerprinting TLS aktif.",
+            "noTls": "${server} (${protocol}): TLS dinonaktifkan — jabat tangan mudah dikenali dan diblokir langsung.",
+            "noUtls": "${server} (${protocol}): TLS aktif tetapi tanpa REALITY atau sidik jari uTLS — menggunakan ClientHello TLS default Go, yang punya tanda tangan JA3/JA4 khas, berbeda dari browser asli."
           }
         },
         "ipReputation": {
